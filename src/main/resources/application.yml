@@ -72,6 +72,9 @@ management:
 ai-chat:
   features:
     mcp-client: true
+  security:
+    oauth2-enabled: false
+    jwt-user-claim: sub
   mcp:
     bootstrap:
       enabled: true

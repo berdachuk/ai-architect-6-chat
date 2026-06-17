@@ -1,6 +1,6 @@
 # AGENTS.md — ai-architect-6-chat (`ai-chat`)
 
-General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **v1.0.0** — all milestones M1–M9 complete; release hardening per [docs/01-requirements.md](docs/01-requirements.md).
+General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **v1.0.0** — M12: optional OAuth2 (default off), user guide, Prometheus prod metrics. Next: [M-13 plan](.agents/plans/M-13-e2e-observability.md).
 
 **Stack:** Java 21 · Spring Boot 4.1 · Spring AI 2.0 · Spring Modulith · PostgreSQL 17 · Thymeleaf SSR · Ollama (OpenAI-compatible client)
 

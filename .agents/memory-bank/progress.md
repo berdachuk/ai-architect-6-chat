@@ -80,3 +80,11 @@
 - Version `1.0.0`; git tag `v1.0.0`
 - **Plan:** M-11 archived; M-12 active for ongoing maintenance
 
+## 2026-06-17 — M-12 OAuth2, user guide, observability
+
+- Optional OAuth2/JWT (`application-oauth2.yml`); default `oauth2-enabled: false` for open dev testing
+- `docs/user-guide.md` end-user documentation
+- Prometheus `/actuator/prometheus` in `prod` profile
+- README aligned with `OLLAMA_*` defaults (`gemma3:4b`)
+- **Plan:** M-12 archived; M-13 active for E2E and Grafana
+

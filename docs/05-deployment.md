@@ -65,9 +65,30 @@ ai-chat:
 
 Set `SPRING_PROFILES_ACTIVE=prod` in production. Override health detail exposure with `MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=when_authorized` if needed.
 
-### Security
+**Metrics:** with `prod` profile, scrape `GET /actuator/prometheus` (requires `micrometer-registry-prometheus`).
 
-For local / dev use (matching `med-expert-match-ce` local profile):
+### User identity and OAuth2 (optional)
+
+**Default (no OAuth2):** `ai-chat.security.oauth2-enabled: false` — all endpoints are open. User id comes from the `X-User-Id` header or `aichat-user-id` cookie (fallback `anonymous`). Use this for local dev and automated tests.
+
+**OAuth2/JWT (opt-in):** activate profile `oauth2` and set your IdP issuer:
+
+```bash
+export OAUTH2_ISSUER_URI=https://your-idp.example.com/realms/your-realm
+export SPRING_PROFILES_ACTIVE=oauth2
+```
+
+With `oauth2` profile:
+
+| Area | Behavior |
+|---|---|
+| `/api/v1/**` | Requires valid `Authorization: Bearer <jwt>` |
+| Web UI (`/`, `/chat/**`) | Open; identity from JWT if present, else `X-User-Id` / cookie |
+| User id claim | `ai-chat.security.jwt-user-claim` (default `sub`) |
+
+See `application-oauth2.yml` for the profile template.
+
+### Security filter (dev default)
 
 ```java
 @Bean

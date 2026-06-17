@@ -1,0 +1,46 @@
+spring:
+  ai:
+    custom:
+      chat:
+        provider: stub
+        base-url: http://localhost:11434
+        api-key: test
+        model: stub-model
+        temperature: 0.7
+        max-tokens: 1024
+      chat-alt:
+        provider: stub
+        base-url: http://localhost:11434
+        api-key: test
+        model: stub-model
+        temperature: 0.7
+        max-tokens: 1024
+      tool-calling:
+        provider: stub
+        base-url: http://localhost:11434
+        api-key: test
+        model: stub-model
+        temperature: 0.3
+        max-tokens: 1024
+    session:
+      repository:
+        jdbc:
+          initialize-schema: never
+      jdbc:
+        schema: ai_chat
+        compaction:
+          strategy: turn-window
+          max-turns: 20
+          max-tokens: 4000
+          window-turns: 30
+
+ai-chat:
+  mcp:
+    bootstrap:
+      enabled: false
+
+management:
+  endpoint:
+    health:
+      show-details: always
+      show-components: always

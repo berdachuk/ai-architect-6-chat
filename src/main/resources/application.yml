@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: ai-chat
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:${AICHAT_DB_PORT:5437}/${AICHAT_DB_NAME:ai_chat}?currentSchema=ai_chat
+    username: ${AICHAT_DB_USERNAME:ai_chat}
+    password: ${AICHAT_DB_PASSWORD:ai_chat}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    default-schema: ai_chat
+  ai:
+    mcp:
+      client:
+        enabled: false
+    custom:
+      chat:
+        provider: ollama
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        api-key: ${OLLAMA_API_KEY:ollama}
+        model: ${OLLAMA_CHAT_MODEL:gemma3:4b}
+        temperature: 0.7
+        max-tokens: 4096
+      chat-alt:
+        provider: ollama
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        api-key: ${OLLAMA_API_KEY:ollama}
+        model: ${OLLAMA_CHAT_ALT_MODEL:gemma3:4b}
+        temperature: 0.7
+        max-tokens: 4096
+      tool-calling:
+        provider: ollama
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        api-key: ${OLLAMA_API_KEY:ollama}
+        model: ${OLLAMA_TOOL_MODEL:gemma3:4b}
+        temperature: 0.3
+        max-tokens: 4096
+    session:
+      repository:
+        jdbc:
+          initialize-schema: never
+      jdbc:
+        schema: ai_chat
+        compaction:
+          strategy: turn-window
+          max-turns: 20
+          max-tokens: 4000
+          window-turns: 30
+
+server:
+  port: ${SERVER_PORT:8095}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+
+ai-chat:
+  features:
+    mcp-client: true
+  mcp:
+    bootstrap:
+      enabled: true
+      name: medical-dataset
+      url: ${MCP_MEDICAL_URL:http://localhost:8092/sse}
+      tools: true
+      resources: true
+      prompts: true
+  harness:
+    max-iterations: 2
+    retry-on-verify-fail: true
+    policy-gate-enabled: true
+    human-checkpoint-enabled: false

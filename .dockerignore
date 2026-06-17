@@ -1,0 +1,8 @@
+target/
+.git/
+.github/
+.agents/
+.cursor/
+.idea/
+*.iml
+.DS_Store

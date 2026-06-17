@@ -1,0 +1,10 @@
+# Production profile — enable with SPRING_PROFILES_ACTIVE=prod
+management:
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+  endpoints:
+    web:
+      exposure:
+        include: health,info

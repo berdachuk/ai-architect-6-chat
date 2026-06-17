@@ -570,6 +570,36 @@
         }
     });
 
+    function initSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.getElementById('sidebarToggle');
+        if (!sidebar || !toggle) {
+            return;
+        }
+        let backdrop = document.querySelector('.sidebar-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'sidebar-backdrop';
+            document.body.appendChild(backdrop);
+        }
+        const setOpen = function (open) {
+            sidebar.classList.toggle('is-open', open);
+            backdrop.classList.toggle('is-open', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        toggle.addEventListener('click', function () {
+            setOpen(!sidebar.classList.contains('is-open'));
+        });
+        backdrop.addEventListener('click', function () {
+            setOpen(false);
+        });
+        sidebar.addEventListener('click', function (event) {
+            if (event.target.closest('a')) {
+                setOpen(false);
+            }
+        });
+    }
+
     document.getElementById('newChatBtn').addEventListener('click', async function () {
         const resp = await fetch('/api/v1/chats', {
             method: 'POST',
@@ -595,6 +625,7 @@
         window.location.href = '/';
     });
 
+    initSidebar();
     loadChatList();
     loadHistory();
     loadMcpPanel();

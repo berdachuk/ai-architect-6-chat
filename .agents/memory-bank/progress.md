@@ -1,5 +1,18 @@
 # Progress log
 
+## 2026-06-18 — Developer ergonomics and chat UI polish
+
+- `docker-compose.dev.yml` + `application-dev.yml` — local dev workflow
+  (Postgres on host:5437, app via `mvn spring-boot:run -Pdev`)
+- `AiChatApplication` — log UI/Health/Swagger URLs on startup
+- `LlmConnectionsHealthIndicator` — per-role LLM health under
+  `/actuator/health` (chat, chat-alt, tool-calling)
+- `IdGenerator` — MongoDB ObjectId layout (4-byte ts + 5-byte random
+  + 3-byte counter) with a timestamp-decoding test
+- Chat UI: stable two-section flex layout, per-message collapsible
+  agent panel, full markdown rendering with `highlight.js`
+- `feature/dev-improvements` merged into `develop` and deleted
+
 ## 2026-06-17 — Documentation baseline
 
 - Full `docs/` set; OpenAI-compatible client + default Ollama

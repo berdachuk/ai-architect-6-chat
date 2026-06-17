@@ -12,7 +12,7 @@ Chat session and message persistence plus REST API (`/api/v1/chats`). Owns the c
 
 | Model | Key fields |
 |---|---|
-| `Chat` | `id`, `userId`, `name`, `agentId`, `isDefault`, `messageCount`, timestamps |
+| `Chat` | `id`, `userId`, `name`, `agentId`, `isDefault`, `messageCount`, `enabledMcpConnections`, timestamps |
 | `ChatMessage` | `id`, `chatId`, `role`, `content`, `sequenceNumber`, `metadata` |
 
 Session memory for LLM uses Spring AI JDBC (`userId-chatId`) — owned by `llm/`, not duplicated here.
@@ -30,7 +30,7 @@ chat/
 ## Conventions
 
 - 24-char hex IDs via `core.util.IdGenerator`
-- SQL in `src/main/resources/sql/chat/*.sql`
+- SQL in `src/main/resources/sql/chat/*.sql` — `@InjectSql` injection; **named binds only** (`:id`, etc.) per DEC-013
 - `requireOwnedChat(userId, chatId)` for all mutations
 - Soft-delete messages on chat delete; recreate default chat if none left
 - REST returns domain records or DTOs — no JDBC types at boundary

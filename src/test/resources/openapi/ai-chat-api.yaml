@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: AI Chat API
+  version: v1
+security:
+  - X-User-Id: []
+paths:
+  /api/v1/chats:
+    get:
+      operationId: listChats
+      tags: [Chats]
+      responses:
+        '200':
+          description: Chat list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Chat'
+    post:
+      operationId: createChat
+      tags: [Chats]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatRequest'
+      responses:
+        '201':
+          description: Created chat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+  /api/v1/chats/{chatId}/history:
+    get:
+      operationId: getChatHistory
+      tags: [Chats]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Message history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatMessage'
+  /api/v1/chats/{chatId}:
+    delete:
+      operationId: deleteChat
+      tags: [Chats]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+  /api/v1/chats/{chatId}/name:
+    put:
+      operationId: renameChat
+      tags: [Chats]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenameChatRequest'
+      responses:
+        '204':
+          description: Renamed
+components:
+  securitySchemes:
+    X-User-Id:
+      type: apiKey
+      in: header
+      name: X-User-Id
+  schemas:
+    Chat:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+        agentId:
+          type: string
+        isDefault:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lastActivityAt:
+          type: string
+          format: date-time
+        messageCount:
+          type: integer
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        role:
+          type: string
+        content:
+          type: string
+        sequenceNumber:
+          type: integer
+        tokensUsed:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    CreateChatRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        agentId:
+          type: string
+    RenameChatRequest:
+      type: object
+      properties:
+        name:
+          type: string

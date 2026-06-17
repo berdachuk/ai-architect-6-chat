@@ -6,7 +6,11 @@
 
 ## Purpose
 
-Optional MCP client integration. Discovers tools/resources from configured MCP servers; exposes catalog to `llm` via `McpServerRegistry`. **Chat must work when this module has zero UP servers.**
+Optional MCP client integration. **Runtime catalog** (add connections via API/UI, no redeploy). **Per-chat selection** — user enables subset of catalog for each session; `MCPToolAdvisor` filters tools accordingly.
+
+## Functional requirements
+
+REQ-MCP-09–14: [docs/01-requirements.md §5](../../../../../../../docs/01-requirements.md#dynamic-mcp-catalog-and-per-chat-context-functional-requirements)
 
 ## Domain / runtime artifacts
 
@@ -19,8 +23,8 @@ Optional MCP client integration. Discovers tools/resources from configured MCP s
 ## Invariants
 
 - Startup succeeds with no MCP servers or all connections failing
-- `MCPToolAdvisor` in `llm/` becomes no-op when registry empty / all DOWN
-- Default target: ai-architect-6-mcp `:8092/sse` (phase 2, M7–M8)
+- `MCPToolAdvisor` in `llm/` becomes no-op when registry empty / all DOWN or none selected for chat
+- Bootstrap seed may include ai-architect-6-mcp `:8092/sse`; adding connections only via YAML/Java is forbidden for production (REQ-MCP-14)
 
 ## Boundaries
 

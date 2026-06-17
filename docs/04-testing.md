@@ -226,8 +226,8 @@ jobs:
 
 ## 7. Manual smoke checklist (M9)
 
-- [ ] App starts on `:8080`, health endpoint returns UP
-- [ ] Open `http://localhost:8080/` → redirected to default chat
+- [ ] App starts on `:8095`, health endpoint returns UP
+- [ ] Open `http://localhost:8095/` → redirected to default chat
 - [ ] Sidebar shows "New Chat" (default)
 - [ ] Type message with **no MCP server running** → streaming LLM response still works
 - [ ] Type message → streaming response appears token-by-token

@@ -33,11 +33,11 @@ The application mirrors the chat, session, harness, and LLM connection patterns 
 
 | Property | Value |
 |---|---|
-| Port | `8080` |
+| Port | `8095` |
 | Transport | HTTP + SSE (Server-Sent Events) for streaming |
-| Spring Boot | 4.1.0 |
-| Spring AI | 2.0.0 |
-| Spring Modulith | 2.1.0 |
+| Spring Boot | **4.x** (baseline **4.1.0** — latest stable 4.x patch) |
+| Spring AI | **2.0.0** (BOM; latest stable 2.0.x patch) |
+| Spring Modulith | **2.1.0** (aligned with Boot 4.x) |
 | JDK | 21 |
 | DB | PostgreSQL 17 (chat sessions + Spring AI Session JDBC) |
 | LLM client | Spring AI **OpenAI-compatible** client (`OpenAiChatModel` / `OpenAiApi`) |
@@ -121,6 +121,8 @@ ai-chat uses a **split architecture**:
 - **Streaming responses** — SSE-based token-by-token streaming to the browser
 - **Long dialog support** — Spring AI Session JDBC with turn-safe compaction (max 20 turns / 4000 tokens window)
 - **MCP client integration** — connect to one or more MCP servers over SSE transport when available; auto-discover tools
+- **Runtime MCP catalog** — add, edit, or remove MCP connection definitions through the **chat UI or REST API** without recompiling or redeploying application code; definitions persisted (not Java-only config)
+- **Per-chat MCP context** — during a chat session, the user selects which MCP connections from the **configurable catalog** are active for that chat; only selected, reachable servers contribute tools to the turn
 - **Chat without MCP** — core chat (CRUD, SSE streaming, session memory, Harness UI) works with zero MCP servers; startup must not fail if MCP is down
 - **Automatic MCP server awareness** — on startup, discover tools/resources/prompts from each configured MCP connection; expose catalog to LLM per turn
 - **Automatic MCP tool selection** — the LLM decides which MCP tools to call based on conversation context (via `ToolCallingAdvisor` + `functiongemma`)
@@ -135,6 +137,8 @@ ai-chat uses a **split architecture**:
 - **Base package `com.berdachuk.aichat`** — all application code under `com.berdachuk.aichat.{core,chat,llm,mcp,web,system}`; do not use `com.example` or other placeholder namespaces
 - **Interface / implementation separation** — public contracts in `service/` and `repository/`; JDBC code only in `impl/` subpackages
 - **JDBC only** — `NamedParameterJdbcTemplate`, no JPA/Hibernate
+- **Externalized SQL** — no inline SQL in Java; `@InjectSql` + files under `sql/<module>/`; named bind parameters (`:name`) only (DEC-013)
+- **Latest stable dependencies** — use current stable releases; **Spring Boot 4.x** and **Spring AI 2.0.0** BOM are mandatory baselines (see §11.1)
 
 ### Non-Goals
 
@@ -147,6 +151,7 @@ ai-chat uses a **split architecture**:
 - Does not include PubMed evidence retrieval
 - Does not include API key authentication (local/dev default)
 - Does not expose its own MCP server — it is an MCP **client** only
+- Does not target Spring Boot 3.x or Spring AI 1.x — **Boot 4.x + Spring AI 2.0.0** only
 
 ---
 
@@ -164,6 +169,7 @@ Each chat session is an independent conversation thread with its own message his
 | `agentId` | Agent profile: `auto` (default) |
 | `isDefault` | One default chat per user — auto-created on first visit |
 | `messageCount` | Denormalized counter for list display |
+| `enabledMcpConnections` | List of MCP connection IDs active for this chat (subset of catalog; default empty or user-chosen) |
 | `createdAt`, `updatedAt`, `lastActivityAt` | Timestamps |
 
 ### Session operations
@@ -176,6 +182,11 @@ Each chat session is an independent conversation thread with its own message his
 | Delete chat | `DELETE /api/v1/chats/{chatId}` | Soft-delete messages, remove chat; recreate default if none left |
 | Send message | `POST /api/v1/chats/{chatId}/messages/stream` | SSE streaming response |
 | Rename chat | `PUT /api/v1/chats/{chatId}/name` | Update chat name |
+| List MCP catalog | `GET /api/v1/mcp/connections` | All configured MCP connections (id, name, url, status, tool count) |
+| Add MCP connection | `POST /api/v1/mcp/connections` | Register new connection at runtime — **no code change** |
+| Remove MCP connection | `DELETE /api/v1/mcp/connections/{connectionId}` | Remove from catalog; detach from chats |
+| Get chat MCP selection | `GET /api/v1/chats/{chatId}/mcp` | MCP connection IDs enabled for this chat |
+| Set chat MCP selection | `PUT /api/v1/chats/{chatId}/mcp` | User picks which catalog entries apply to this session's context |
 
 ### Message model
 
@@ -229,6 +240,21 @@ When MCP is disabled or no servers are reachable, step 2 is skipped (chain colla
 
 ## 5. MCP Client Integration
 
+### Dynamic MCP catalog and per-chat context (functional requirements)
+
+MCP connections must be **data-driven**. Adding a new MCP server URL must not require changing Java source, rebuilding, or redeploying the application.
+
+| ID | Requirement | Acceptance |
+|---|---|---|
+| REQ-MCP-09 | **Runtime catalog** — users/admins register MCP connections via UI or REST (`POST /api/v1/mcp/connections`) | New connection appears in catalog; client initializes and discovers tools without redeploy |
+| REQ-MCP-10 | **Persistent definitions** — catalog stored outside compiled code (DB table `ai_chat.mcp_connection` or equivalent) | Restart reloads catalog; optional seed from `application.yml` / env on first boot only |
+| REQ-MCP-11 | **Per-chat selection** — each chat stores `enabledMcpConnections` (connection IDs) | `PUT /api/v1/chats/{chatId}/mcp` updates selection; persisted per session |
+| REQ-MCP-12 | **UI picker** — chat interface shows available connections; user toggles which are active for **current chat** | Composer or sidebar MCP panel; changes apply to next message turn |
+| REQ-MCP-13 | **Scoped tool injection** — `MCPToolAdvisor` uses intersection of (catalog UP servers) ∩ (chat-enabled IDs) | Disabled or unselected servers never expose tools for that chat |
+| REQ-MCP-14 | **No compile for new URL** — forbidden to require new `spring.ai.mcp.client.sse.connections.*` YAML keys as the only way to add servers in production | YAML/env may bootstrap defaults; runtime API/UI is the primary extension path |
+
+**Invariant:** chat without any MCP selected or reachable still streams LLM replies (unchanged degradation rules).
+
 ### MCP connection model
 
 The application is an **MCP client** that connects to one or more MCP servers over SSE transport. It uses Spring AI's `McpSyncClient` to discover tools, resources, and prompts from each server.
@@ -237,11 +263,14 @@ The application is an **MCP client** that connects to one or more MCP servers ov
 |---|---|
 | Transport | SSE (Server-Sent Events) |
 | Client type | `McpSyncClient` (SYNC) |
-| Connection config | `spring.ai.mcp.client.sse.connections.{name}.url` |
-| Auto-discovery | On startup, each connection is initialized; tools are registered |
-| Dynamic tool selection | LLM decides which MCP tools to invoke based on user query |
+| Connection config | Runtime catalog (DB) + optional bootstrap in `application.yml` / env |
+| Per-chat scope | `enabledMcpConnections` on `Chat`; advisor filters by chat + health |
+| Auto-discovery | On connect/reconnect, discover tools/resources/prompts per capability flags |
+| Dynamic tool selection | LLM decides which tools to invoke from **chat-enabled** reachable servers |
 
 ### MCP server connections (configurable)
+
+**Bootstrap (optional)** — seed default connections at first deploy:
 
 ```yaml
 spring:
@@ -255,32 +284,45 @@ spring:
               tools: true
               resources: true
               prompts: true
-            # Additional MCP servers can be added:
-            # weather-service:
-            #   url: http://localhost:8093/sse
+```
+
+**Runtime catalog (required for REQ-MCP-09)** — additional connections added via `POST /api/v1/mcp/connections` or chat UI; persisted to `ai_chat.mcp_connection`. No application rebuild.
+
+Example runtime payload:
+
+```json
+{
+  "name": "weather-service",
+  "url": "http://localhost:8093/sse",
+  "tools": true,
+  "resources": false,
+  "prompts": false
+}
 ```
 
 ### MCP server discovery flow (startup)
 
-1. Read `spring.ai.mcp.client.sse.connections` map (connection name → URL + capability flags)
-2. For each connection, create `McpSyncClient` via `HttpClientSseClientTransport` (`GET /sse`, `POST /mcp/message`)
+1. Load connection definitions from **persistent catalog** (and merge optional YAML bootstrap seeds if catalog empty)
+2. For each catalog entry, create or refresh `McpSyncClient` via `HttpClientSseClientTransport` (`GET /sse`, `POST /mcp/message`)
 3. Call `initialize()` → store server name, version, capabilities
 4. Call `listTools()`, `listResources()`, `listPrompts()` per capability flags
 5. Register results in `McpServerRegistry` (in-memory catalog with health status per server)
 6. Wrap tools as `McpToolCallbackWrapper` → Spring AI `ToolCallback` (prefixed `[MCP:{serverName}]`)
 7. Expose registry via actuator health (`McpConnectionHealthIndicator`)
+8. On `POST /api/v1/mcp/connections`, repeat steps 2–7 for the new entry **without restart**
 
 ### MCP tool selection flow (per turn)
 
-1. `MCPToolAdvisor` reads `McpServerRegistry.getReachableServers()` — only UP servers
-2. Builds system-text catalog: server name, tool name, description, input schema summary
-3. Attaches all reachable tool callbacks to the prompt
-4. Primary model (`gemma4:31b-cloud`) reasons over user message + session memory + tool catalog
-5. `ToolCallingAdvisor` delegates actual tool invocation to `functiongemma:270m`
-6. Tool results flow back into the chat model context; `ChatStreamActivityPublisher` emits `activity/tool_call` SSE events
-7. Final response streams as `token` events
+1. Resolve **chat-enabled** connection IDs (`Chat.enabledMcpConnections` or `GET` equivalent)
+2. `MCPToolAdvisor` reads `McpServerRegistry.getReachableServers()` filtered to that set — only UP servers in the intersection
+3. Builds system-text catalog: server name, tool name, description, input schema summary
+4. Attaches filtered tool callbacks to the prompt
+5. Primary model (`gemma4:31b-cloud`) reasons over user message + session memory + tool catalog
+6. `ToolCallingAdvisor` delegates actual tool invocation to `functiongemma:270m`
+7. Tool results flow back into the chat model context; `ChatStreamActivityPublisher` emits `activity/tool_call` SSE events
+8. Final response streams as `token` events
 
-**Server selection rule:** all configured and reachable MCP servers are offered to the LLM. The model selects tools by name/description relevance — no hard-coded routing table. Optional future enhancement: keyword-based server pre-filtering before advisor injection.
+**Server selection rule:** only MCP connections **enabled for the current chat** and **reachable in the registry** are offered to the LLM. The model selects tools by name/description relevance — no hard-coded routing table in Java.
 
 ### Graceful degradation (required)
 
@@ -489,8 +531,8 @@ The chat model supports **Structured Output** via Spring AI's `@Tool` annotation
 │  Chat 2    │  │ Assistant: Cardiovascular diseases... │   │
 │  Chat 3    │  │ [Agent Panel: 1 agent · 3 steps]    │   │
 │  ...       │  └──────────────────────────────────────┘   │
-│            │  Composer: [textarea] [Send]               │
-│  [Delete   │                                             │
+│            │  MCP: [☑ medical-dataset] [☐ weather] [+ Add] │
+│  [Delete   │  Composer: [textarea] [Send]               │
 │   All]     │                                             │
 └────────────┴─────────────────────────────────────────────┘
 ```
@@ -505,6 +547,13 @@ Same pattern as `med-expert-match-ce` `chat.js` (769 lines):
 - **`pipeline_stage`** events → update workflow stage indicator
 - **`done`** event → finalize message, collapse agent panel with summary
 - **Reasoning split** — detects "strategizing complete" markers, wraps reasoning in `<details>` collapsible
+
+### MCP connection UI (REQ-MCP-12)
+
+- **Catalog panel** — list available MCP connections (name, status UP/DOWN, tool count)
+- **Add connection** — form: name, SSE URL, capability toggles; submits to `POST /api/v1/mcp/connections` (no redeploy)
+- **Per-chat toggles** — checkboxes (or chips) for which connections are active in the **current chat**; saves via `PUT /api/v1/chats/{chatId}/mcp`
+- **Visual feedback** — show which MCPs contributed to the current turn in the agent panel when tools run
 
 ---
 
@@ -551,6 +600,10 @@ CREATE INDEX idx_chat_message_chat ON ai_chat.chat_message (chat_id, created_at)
 -- ai_session, ai_session_event — auto-created by Spring AI
 
 -- Harness workflow tables — see V2__harness_schema.sql (03-design.md)
+
+-- MCP runtime catalog + per-chat bindings — see V2__mcp_catalog.sql (REQ-MCP-09–11)
+-- ai_chat.mcp_connection (id, name, url, capability flags, created_at, …)
+-- ai_chat.chat_mcp_binding (chat_id, connection_id) or chat.enabled_mcp_connections JSONB column
 ```
 
 ### ID generation
@@ -596,14 +649,55 @@ system  → core, mcp
 | Service | `{module}/service/XxxService.java` | `{module}/service/impl/XxxServiceImpl.java` |
 | MCP adapters | `mcp/*` — delegates to service interfaces | No JDBC in MCP layer |
 
+### SQL persistence rules (mandatory)
+
+Pattern reference: [`MedicalCaseRepositoryImpl`](https://github.com/berdachuk/ai-architect-6-mcp/blob/main/src/main/java/com/example/medicalmcp/medicalcase/repository/impl/MedicalCaseRepositoryImpl.java) in **ai-architect-6-mcp** (same as med-expert-match-ce / ai-chat `core.repository.sql.InjectSql`).
+
+| Rule | Requirement |
+|---|---|
+| **No inline SQL** | SQL text must **not** appear in Java string literals (`"SELECT …"`, text blocks, or concatenation). All statements live in `src/main/resources/sql/<module>/*.sql`. |
+| **Inject SQL** | Repository `impl` classes declare `@InjectSql("/sql/<module>/<name>.sql")` fields; `SqlInjectBeanPostProcessor` in `core` loads classpath content at startup. |
+| **Named parameters only** | SQL files use `:bindName` placeholders (e.g. `WHERE id = :id`). Java passes values via `MapSqlParameterSource` / `Map.of("id", id)` with `NamedParameterJdbcTemplate` — **never** positional `?` placeholders or `JdbcTemplate` for application SQL. |
+| **One file per statement** | Prefer one logical query per `.sql` file (`selectById.sql`, `insert.sql`, `listByUser.sql`). |
+| **Flyway separate** | Schema DDL/migrations stay in `db/migration/`; runtime DML/SELECT in `sql/` — do not mix. |
+
+Example SQL (`sql/chat/selectById.sql`):
+
+```sql
+SELECT id, user_id, name, agent_id, is_default, created_at, updated_at, last_activity_at, message_count
+FROM ai_chat.chat
+WHERE id = :id
+```
+
+Example repository field:
+
+```java
+@InjectSql("/sql/chat/selectById.sql")
+private String selectByIdSql;
+```
+
 ---
 
 ## 11. Key Dependencies
 
+### 11.1 Version policy (mandatory)
+
+| Rule | Requirement |
+|---|---|
+| **Spring Boot** | **4.x only** — parent `spring-boot-starter-parent` at latest stable **4.x** patch (baseline **4.1.0**). Do not use Spring Boot 3.x for new work. |
+| **Spring AI** | **2.0.0** BOM (`spring-ai-bom`) — all `spring-ai-*` artifacts from this BOM; use latest stable **2.0.x** patch resolved by the BOM. |
+| **Spring Modulith** | **2.1.x** BOM — compatible with Boot 4.x |
+| **Other libraries** | Prefer **latest stable** versions compatible with Boot 4 / Spring AI 2.0 (PostgreSQL driver, Flyway, Testcontainers, etc. via Boot BOM or explicit current stable) |
+| **Upgrades** | When bumping dependencies, run `mvn test` and `mvn verify -Pintegration`; record material changes in `decisions.md` |
+
+`pom.xml` must import `spring-ai-bom` **2.0.0** even before LLM features land (M3), so the stack is fixed from M1 onward.
+
+### 11.2 Dependency list
+
 | Dependency | Version | Notes |
 |---|---|---|
-| Spring Boot | 4.1.0 | Parent POM |
-| Spring AI BOM | 2.0.0 | |
+| Spring Boot | 4.1.0 | Parent POM (latest stable 4.x) |
+| Spring AI BOM | 2.0.0 | Mandatory AI stack |
 | Spring Modulith BOM | 2.1.0 | |
 | Java | 21 | |
 | `spring-boot-starter-web` | (Boot BOM) | Thymeleaf SSR + REST |
@@ -696,7 +790,7 @@ spring:
           window-turns: 30
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8095}
   shutdown: graceful
 
 management:
@@ -742,7 +836,7 @@ ai-chat:
 | `TOOL_CALLING_API_KEY` | `none` | API key for tool-calling model |
 | `TOOL_CALLING_MODEL` | `functiongemma:270m` | Tool-calling model name |
 | `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (`medical-dataset` connection) |
-| `SERVER_PORT` | `8080` | Application port |
+| `SERVER_PORT` | `8095` | Application port |
 
 ---
 
@@ -753,7 +847,7 @@ ai-chat:
 | # | Milestone | Key deliverables | Acceptance criteria | Status |
 |---|---|---|---|---|
 | M1 | Schema + modulith foundation | `V1__init_chat_schema.sql`, domain records, `package-info.java`, Boot stub, `ModulithArchitectureTest` | `mvn test` passes; schema migrates | ✅ |
-| M2 | Chat session CRUD | `ChatRepository`, `ChatService`, `ChatController` REST | Create/list/rename/delete/history; default chat auto-created | ⬜ |
+| M2 | Chat session CRUD | `ChatRepository`, `ChatService`, `ChatController` REST | Create/list/rename/delete/history; default chat auto-created | ✅ |
 | M3 | LLM integration | `SpringAIConfig`, `OpenAiChatModelFactory`, `ChatAssistantService`, SSE `token`/`done` | Stream response from `gemma4:31b-cloud` via Ollama; **works with MCP disabled** | ⬜ |
 | M4 | Session memory | Session JDBC, compaction, `SessionMemoryAdvisor`, `DateTimeContextAdvisor` | 20+ turn dialog retains context; compaction fires at threshold | ⬜ |
 | M5 | Harness engine | `ChatWorkflowEngine`, planner/verifier/policy, `ChatStreamActivityPublisher` | Agent panel shows `pipeline_stage` + `activity` events | ⬜ |
@@ -763,8 +857,8 @@ ai-chat:
 
 | # | Milestone | Key deliverables | Acceptance criteria | Status |
 |---|---|---|---|---|
-| M7 | MCP client | `McpClientConfig`, `McpServerRegistry`, `MCPToolAdvisor`, tool wrappers | WireMock test passes; **app boots when MCP URL is down**; health reports DOWN | ⬜ |
-| M8 | ai-architect-6-mcp | Connect to `:8092/sse`; all 5 tools callable in chat | "List specialties" → `list_specialties`; "search cardiovascular" → `search_cases` | ⬜ |
+| M7 | MCP client + runtime catalog | `McpClientConfig`, `McpServerRegistry`, `MCPToolAdvisor`, `mcp_connection` table, REST `/api/v1/mcp/connections` | REQ-MCP-09/10/14; add connection via API without redeploy; WireMock IT | ⬜ |
+| M8 | Per-chat MCP + ai-architect-6-mcp | Chat `enabledMcpConnections`, UI toggles, `PUT .../mcp` | User enables medical-dataset for chat → tools from `:8092`; REQ-MCP-11–13 | ⬜ |
 
 ### Phase 3 — Packaging
 
@@ -781,7 +875,7 @@ services:
   ai-chat:
     build: .
     ports:
-      - "8080:8080"
+      - "8095:8095"
     environment:
       AICHAT_DB_HOST: postgres
       AICHAT_DB_USERNAME: ai_chat
@@ -802,7 +896,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8095/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3

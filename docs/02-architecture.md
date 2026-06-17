@@ -21,7 +21,7 @@ System design for `ai-chat`: deployment topology, Spring Modulith modules, stack
                                   │  HTTP + SSE (text/event-stream)
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ai-chat  :8080  (single module, Spring Modulith)                       │
+│  ai-chat  :8095  (single module, Spring Modulith)                       │
 │                                                                         │
 │  web/ — Thymeleaf SSR controllers                                       │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
@@ -247,12 +247,12 @@ class ModulithArchitectureTest {
 
 ## Stack & Versions
 
-Aligned with `med-expert-match-ce` versions:
+Aligned with [01-requirements.md §11.1](01-requirements.md#111-version-policy-mandatory) — **Spring Boot 4.x** and **Spring AI 2.0.0** mandatory; use latest stable compatible patches.
 
 | Dependency | Version | Notes |
 |---|---|---|
-| Spring Boot | 4.1.0 | Parent POM |
-| Spring AI BOM | 2.0.0 | |
+| Spring Boot | 4.1.0 | Parent POM — **4.x latest stable** (DEC-012) |
+| Spring AI BOM | 2.0.0 | Mandatory; import in `pom.xml` from M1 |
 | Spring Modulith BOM | 2.1.0 | |
 | Java | 21 | |
 | `spring-boot-starter-web` | (Boot BOM) | REST + Thymeleaf |
@@ -316,7 +316,7 @@ Aligned with `med-expert-match-ce` versions:
 | Modularity | Spring Modulith package modules | Same pattern as `med-expert-match-ce`; `verify()` in CI |
 | API surface | Interface in `service/` / `repository/` | Impl in `*/impl/`; REST/web layer never touches JDBC |
 | Persistence | JDBC only (`NamedParameterJdbcTemplate`) | Consistent with `med-expert-match-ce`; no JPA/Hibernate |
-| SQL externalization | `@InjectSql` + classpath SQL files | Same pattern as `med-expert-match-ce`; SQL reviewable independently |
+| SQL externalization | `@InjectSql` + `sql/<module>/*.sql`; named `:bind` only | DEC-013; [ai-architect-6-mcp example](https://github.com/berdachuk/ai-architect-6-mcp/blob/main/src/main/java/com/example/medicalmcp/medicalcase/repository/impl/MedicalCaseRepositoryImpl.java) |
 | LLM client | Spring AI OpenAI-compatible (`OpenAiChatModel`) | Same as med-expert-match-ce; not OpenAI cloud-specific |
 | LLM backend (default) | Ollama `http://localhost:11434/v1` | Local dev default; any OpenAI-compatible API via env override |
 | ChatModel creation | Manual `OpenAiChatModel` via `OpenAiChatModelFactory` | Auto-config excluded; multi-role with lazy init |

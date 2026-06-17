@@ -91,7 +91,36 @@
 
 | Field | Value |
 |---|---|
+| Status | **Superseded** by DEC-012 |
+| Date | 2026-06-17 |
+| Note | Temporary Boot 3.4.4 used only for initial M1 scaffold |
+
+## DEC-012 — Latest stable stack: Boot 4.x + Spring AI 2.0.0
+
+| Field | Value |
+|---|---|
 | Status | Accepted |
 | Date | 2026-06-17 |
-| Rationale | Spring Boot 4.1 / Modulith 2.1 BOM not used in first build; 3.4.4 + Modulith 1.3.4 compiles and passes tests |
-| Consequence | Upgrade `pom.xml` to doc target versions (Boot 4.1, Modulith 2.1, Spring AI 2.0) in M2–M3 without structural changes |
+| Modules | all (`pom.xml`) |
+| Rationale | Stay on supported Spring generation; Spring AI 2.0 aligns with Boot 4 |
+| Consequence | `spring-boot-starter-parent` **4.1.0**; `spring-ai-bom` **2.0.0**; Modulith **2.1.0**; bump to latest stable 4.x / 2.0.x patches per §11.1 |
+
+## DEC-013 — Externalized SQL + named bind parameters
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Date | 2026-06-17 |
+| Modules | `core`, `chat`, any JDBC repository |
+| Rationale | Reviewable SQL, no string literals in Java, safe parameter binding; proven in [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp/blob/main/src/main/java/com/example/medicalmcp/medicalcase/repository/impl/MedicalCaseRepositoryImpl.java) |
+| Consequence | `@InjectSql` + files under `src/main/resources/sql/`; `NamedParameterJdbcTemplate` with `:name` binds only; no inline SQL, no `?` positional JDBC in app code |
+
+## DEC-011 — Runtime MCP catalog and per-chat selection
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Date | 2026-06-17 |
+| Modules | `mcp`, `chat`, `web`, `llm` |
+| Rationale | Operators and users must add MCP servers and scope them per chat without redeploy |
+| Consequence | Persistent `mcp_connection` catalog; `enabledMcpConnections` per chat; REST + UI; `MCPToolAdvisor` filters by chat selection (REQ-MCP-09–14) |

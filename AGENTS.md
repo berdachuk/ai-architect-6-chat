@@ -1,6 +1,6 @@
 # AGENTS.md — ai-architect-6-chat (`ai-chat`)
 
-General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **M1 implemented** — Modulith foundation, Flyway schema, domain records. Next: M2 per [docs/01-requirements.md](docs/01-requirements.md).
+General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **M2 implemented** — chat CRUD REST, OpenAPI, JDBC repositories. Next: M3 per [docs/01-requirements.md](docs/01-requirements.md).
 
 **Stack:** Java 21 · Spring Boot 4.1 · Spring AI 2.0 · Spring Modulith · PostgreSQL 17 · Thymeleaf SSR · Ollama (OpenAI-compatible client)
 
@@ -34,6 +34,7 @@ docs/          canonical SRS, SAD, SDD, testing, deployment
 | | Rule |
 |---|---|
 | ✅ | JDBC only (`NamedParameterJdbcTemplate`); interfaces in `service/`/`repository/`, impl in `impl/` |
+| ✅ | SQL in `sql/<module>/*.sql` via `@InjectSql`; named `:bind` only — no inline SQL (DEC-013) |
 | ✅ | OpenAI-compatible `OpenAiChatModel`; default Ollama `http://localhost:11434/v1` |
 | ✅ | Chat **must work without MCP** — degrade gracefully when MCP down |
 | ✅ | TDD: test first → requirement alignment → security pre-check → implement → verify |

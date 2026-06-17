@@ -153,10 +153,10 @@ public interface ChatMessageRepository {
 public class ChatRepositoryImpl implements ChatRepository {
     private final NamedParameterJdbcTemplate jdbc;
 
-    @InjectSql("classpath:sql/chat/insert.sql")
+    @InjectSql("/sql/chat/insert.sql")
     private String insertSql;
 
-    @InjectSql("classpath:sql/chat/selectById.sql")
+    @InjectSql("/sql/chat/selectById.sql")
     private String selectByIdSql;
 
     // ... other injected SQL fields

@@ -81,7 +81,7 @@ spring:
           window-turns: 30
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8095}
   shutdown: graceful
   compression:
     enabled: true
@@ -160,7 +160,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 | `TOOL_CALLING_API_KEY` | `none` | API key for tool-calling model |
 | `TOOL_CALLING_MODEL` | `functiongemma:270m` | Tool-calling model name |
 | `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (`medical-dataset` connection) |
-| `SERVER_PORT` | `8080` | Application port |
+| `SERVER_PORT` | `8095` | Application port |
 
 ---
 
@@ -171,7 +171,7 @@ services:
   ai-chat:
     build: .
     ports:
-      - "8080:8080"
+      - "8095:8095"
     environment:
       AICHAT_DB_HOST: postgres
       AICHAT_DB_USERNAME: ai_chat
@@ -192,7 +192,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8095/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -235,9 +235,9 @@ FROM eclipse-temurin:21-jre-jammy
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /build/target/*.jar app.jar
-EXPOSE 8080
+EXPOSE 8095
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+  CMD curl -f http://localhost:8095/actuator/health || exit 1
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
@@ -362,7 +362,7 @@ mvn spring-boot:run
 
 ### Access the chat
 
-Open `http://localhost:8080/` in a browser.
+Open `http://localhost:8095/` in a browser.
 
 ---
 

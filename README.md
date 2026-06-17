@@ -16,7 +16,7 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 
 | Property | Value |
 |---|---|
-| Port | `8080` |
+| Port | `8095` |
 | Transport | HTTP + SSE (`text/event-stream`) |
 | Database | PostgreSQL 17 (`ai_chat` schema) |
 | LLM client | Spring AI OpenAI-compatible (`OpenAiChatModel`) |
@@ -35,7 +35,7 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 | **Long dialog support** | Spring AI Session JDBC with turn-window compaction (20 turns / 4000 tokens) |
 | **Harness workflow** | Generic `ChatWorkflowEngine` — planning, tool execution, verification, policy gate |
 | **Agent progress UI** | Real-time SSE events: `activity`, `pipeline_stage`, `agent` (ported from med-expert-match-ce) |
-| **MCP client** | Optional — auto-discover tools when servers are UP; chat works when they are not |
+| **MCP client** | Optional — runtime catalog (add servers without redeploy); per-chat MCP toggles; chat works when none selected |
 | **Multi-role LLM** | `gemma4:31b-cloud` for chat; `functiongemma:270m` for tool calling |
 | **OpenAI-compatible client** | Spring AI `OpenAiChatModel`; default backend **Ollama**; swappable via env vars |
 | **Spring Modulith** | Package modules with `allowedDependencies`; `verify()` in CI |
@@ -60,7 +60,7 @@ src/main/java/com/berdachuk/aichat/
 Browser (Thymeleaf + chat.js)
         │  HTTP + SSE
         ▼
-   ai-chat :8080
+   ai-chat :8095
         ├── PostgreSQL 17  (sessions, messages, ai_session)
         ├── Ollama         (gemma4:31b-cloud, gemma4:12b, functiongemma:270m)
         └── MCP server(s)  (ai-architect-6-mcp :8092/sse — phase 2)
@@ -75,9 +75,9 @@ Details: [docs/02-architecture.md](docs/02-architecture.md)
 | Component | Version |
 |---|---|
 | Java | 21 |
-| Spring Boot | 4.1.0 |
-| Spring AI | 2.0.0 |
-| Spring Modulith | 2.1.0 |
+| Spring Boot | **4.1.0** (latest stable **4.x**) |
+| Spring AI | **2.0.0** BOM |
+| Spring Modulith | **2.1.0** |
 | PostgreSQL | 17 |
 | `spring-ai-starter-session-jdbc` | 0.3.0 |
 | `spring-ai-starter-mcp-client` | 2.0.0 |
@@ -152,7 +152,7 @@ docker run -d --name ai-chat-postgres \
 mvn spring-boot:run
 ```
 
-Open `http://localhost:8080/`
+Open `http://localhost:8095/`
 
 **With MCP (phase 2):**
 

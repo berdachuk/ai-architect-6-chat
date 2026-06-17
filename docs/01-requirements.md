@@ -40,7 +40,8 @@ The application mirrors the chat, session, harness, and LLM connection patterns 
 | Spring Modulith | 2.1.0 |
 | JDK | 21 |
 | DB | PostgreSQL 17 (chat sessions + Spring AI Session JDBC) |
-| LLM Provider | Ollama (OpenAI-compatible API) |
+| LLM client | Spring AI **OpenAI-compatible** client (`OpenAiChatModel` / `OpenAiApi`) |
+| LLM backend (default) | **Ollama** at `http://localhost:11434/v1` |
 | Primary Model | `gemma4:31b-cloud` |
 | Alternative Model | `gemma4:12b` |
 
@@ -126,6 +127,7 @@ ai-chat uses a **split architecture**:
 - **Agent progress display** — real-time SSE events showing agent activity (tool calls, reasoning, plan updates)
 - **Structured Output** — LLM responses with typed JSON output where applicable
 - **Multi-role LLM architecture** — separate models for chat (`gemma4`) and tool-calling (`functiongemma`)
+- **OpenAI-compatible LLM client** — all chat and tool-calling traffic via Spring AI `OpenAiChatModel`; **default backend Ollama** (`/v1` API); endpoints overridable per role via env vars
 - **Session memory** — conversation context mixed into each request via `SessionMemoryAdvisor`
 - **Thymeleaf SSR frontend** — vanilla JS + Bootstrap 5.3, no SPA framework
 - **Spring Modulith** package modules with `allowedDependencies` (same pattern as `med-expert-match-ce`)
@@ -374,6 +376,41 @@ Optional (phase 1.5): parallel `EventSource` on `/api/v1/logs/stream?sessionId=`
 
 ## 7. LLM Connections
 
+### OpenAI-compatible client (default: Ollama)
+
+All LLM access uses the **Spring AI OpenAI-compatible client** — same pattern as [`med-expert-match-ce`](https://github.com/berdachuk/med-expert-match-ce):
+
+| Requirement | Specification |
+|---|---|
+| Client library | `spring-ai-starter-model-openai` → `OpenAiChatModel`, `OpenAiApi`, `ChatClient` |
+| Factory | `OpenAiChatModelFactory` builds models from `spring.ai.custom.*` properties |
+| Auto-configuration | **Disabled** — `OpenAiChatAutoConfiguration` and related OpenAI auto-config beans excluded; manual wiring only |
+| Config `provider` value | `openai` (Spring AI convention for OpenAI-compatible HTTP API, not necessarily OpenAI cloud) |
+| **Default backend** | **Ollama** — `http://localhost:11434/v1` for all roles unless overridden |
+| Default API key | `none` (Ollama does not require a key) |
+| URL normalization | Factory appends `/v1` suffix when missing (Ollama compatibility) |
+| Swappable backends | Any OpenAI-compatible endpoint per role: LM Studio, vLLM, OpenAI, Azure OpenAI, etc. — change `*_BASE_URL`, `*_API_KEY`, `*_MODEL` env vars only |
+| Bean lifecycle | All `ChatModel` beans `@Lazy` — no connection at startup unless validated explicitly |
+
+**Default Ollama endpoints (all roles):**
+
+| Role | Env prefix | Default `base-url` | Default model |
+|---|---|---|---|
+| Chat (primary) | `CHAT_*` | `http://localhost:11434/v1` | `gemma4:31b-cloud` |
+| Chat (alt) | `CHAT_ALT_*` | `http://localhost:11434/v1` | `gemma4:12b` |
+| Tool calling | `TOOL_CALLING_*` | `http://localhost:11434/v1` | `functiongemma:270m` |
+
+Example — point chat at a cloud OpenAI-compatible API while keeping Ollama for tool calling:
+
+```yaml
+# Override via environment (no code change)
+CHAT_BASE_URL=https://api.example.com/v1
+CHAT_API_KEY=sk-...
+CHAT_MODEL=gpt-4o
+TOOL_CALLING_BASE_URL=http://localhost:11434/v1   # still Ollama
+TOOL_CALLING_MODEL=functiongemma:270m
+```
+
 ### Multi-role architecture
 
 Same pattern as `med-expert-match-ce` — separate models for different roles:
@@ -415,10 +452,10 @@ spring:
 
 ### ChatModel creation
 
-- `OpenAiChatModelFactory.create()` builds `OpenAiChatModel` from resolved endpoint properties
+- `OpenAiChatModelFactory.create()` builds `OpenAiChatModel` via `OpenAiApi.builder().baseUrl(...).apiKey(...)`
 - All ChatModels are `@Lazy` to avoid initialization overhead
 - Auto-config disabled for: `OpenAiChatAutoConfiguration`, `OpenAiEmbeddingAutoConfiguration`, `OpenAiAudioSpeechAutoConfiguration`, `OpenAiAudioTranscriptionAutoConfiguration`, `OpenAiImageAutoConfiguration`
-- Provider: **OpenAI-compatible API** (Ollama uses `/v1` suffix)
+- **Default:** all roles target Ollama OpenAI-compatible API (`/v1`); other providers supported by configuration only
 
 ### Structured Output
 

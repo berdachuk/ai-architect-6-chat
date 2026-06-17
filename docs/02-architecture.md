@@ -317,8 +317,9 @@ Aligned with `med-expert-match-ce` versions:
 | API surface | Interface in `service/` / `repository/` | Impl in `*/impl/`; REST/web layer never touches JDBC |
 | Persistence | JDBC only (`NamedParameterJdbcTemplate`) | Consistent with `med-expert-match-ce`; no JPA/Hibernate |
 | SQL externalization | `@InjectSql` + classpath SQL files | Same pattern as `med-expert-match-ce`; SQL reviewable independently |
-| LLM provider | OpenAI-compatible API (Ollama) | Same as `med-expert-match-ce`; `/v1` suffix for Ollama compatibility |
-| ChatModel creation | Manual `OpenAiChatModel` via factory | Auto-config excluded; multi-role with lazy init |
+| LLM client | Spring AI OpenAI-compatible (`OpenAiChatModel`) | Same as med-expert-match-ce; not OpenAI cloud-specific |
+| LLM backend (default) | Ollama `http://localhost:11434/v1` | Local dev default; any OpenAI-compatible API via env override |
+| ChatModel creation | Manual `OpenAiChatModel` via `OpenAiChatModelFactory` | Auto-config excluded; multi-role with lazy init |
 | Session memory | Spring AI Session JDBC (community) | Turn-safe compaction; JTokkit token estimation |
 | MCP optional at runtime | Graceful degradation; no startup failure | Chat is usable without MCP; enrichment is best-effort only |
 | MCP transport | SSE (SYNC) via `McpSyncClient` | Same as ai-architect-6-mcp client config |

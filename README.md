@@ -19,7 +19,8 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 | Port | `8080` |
 | Transport | HTTP + SSE (`text/event-stream`) |
 | Database | PostgreSQL 17 (`ai_chat` schema) |
-| LLM provider | Ollama (OpenAI-compatible `/v1` API) |
+| LLM client | Spring AI OpenAI-compatible (`OpenAiChatModel`) |
+| LLM backend (default) | Ollama (`http://localhost:11434/v1`) |
 | MCP transport | SSE (`McpSyncClient`) |
 
 ---
@@ -35,6 +36,7 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 | **Agent progress UI** | Real-time SSE events: `activity`, `pipeline_stage`, `agent` (ported from med-expert-match-ce) |
 | **MCP client** | Optional — auto-discover tools when servers are UP; chat works when they are not |
 | **Multi-role LLM** | `gemma4:31b-cloud` for chat; `functiongemma:270m` for tool calling |
+| **OpenAI-compatible client** | Spring AI `OpenAiChatModel`; default backend **Ollama**; swappable via env vars |
 | **Spring Modulith** | Package modules with `allowedDependencies`; `verify()` in CI |
 
 ---
@@ -82,6 +84,12 @@ Details: [docs/02-architecture.md](docs/02-architecture.md)
 | Frontend | Thymeleaf 3 + Bootstrap 5.3 + vanilla JS |
 
 ---
+
+## LLM connection
+
+- **Client:** Spring AI OpenAI-compatible (`OpenAiChatModel` + `OpenAiApi` + `ChatClient`)
+- **Default backend:** Ollama at `http://localhost:11434/v1` (all roles)
+- **Override:** per-role `CHAT_*`, `CHAT_ALT_*`, `TOOL_CALLING_*` env vars
 
 ## LLM models (Ollama)
 

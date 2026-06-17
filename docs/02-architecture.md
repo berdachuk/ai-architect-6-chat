@@ -220,14 +220,14 @@ package com.berdachuk.aichat.system;
 
 ### Interface / implementation convention
 
-| Pattern | med-expert-match-ce example | ai-chat |
-|---|---|---|
-| Repository API | `chat/repository/ChatRepository.java` | Same package layout |
-| Repository impl | `chat/repository/impl/ChatRepositoryImpl.java` | JDBC via `NamedParameterJdbcTemplate` |
-| Service API | `chat/service/ChatService.java` | `ChatService`, `ChatAssistantService` |
-| Service impl | `chat/service/impl/ChatServiceImpl.java` | `*ServiceImpl` in `service/impl/` |
-| REST layer | `chat/rest/ChatController.java` | Injects service interfaces only |
-| Web layer | `web/controller/ChatWebController.java` | Thymeleaf SSR, injects service interfaces |
+| Pattern         | med-expert-match-ce example                    | ai-chat                                   |
+|-----------------|------------------------------------------------|-------------------------------------------|
+| Repository API  | `chat/repository/ChatRepository.java`          | Same package layout                       |
+| Repository impl | `chat/repository/impl/ChatRepositoryImpl.java` | JDBC via `NamedParameterJdbcTemplate`     |
+| Service API     | `chat/service/ChatService.java`                | `ChatService`, `ChatAssistantService`     |
+| Service impl    | `chat/service/impl/ChatServiceImpl.java`       | `*ServiceImpl` in `service/impl/`         |
+| REST layer      | `chat/rest/ChatController.java`                | Injects service interfaces only           |
+| Web layer       | `web/controller/ChatWebController.java`        | Thymeleaf SSR, injects service interfaces |
 
 **Rules:** no `@Service` / `@Repository` on interfaces; impl classes are the only `@Component` stereotypes; REST/web and cross-module code never references `*.impl.*` types.
 
@@ -249,29 +249,29 @@ class ModulithArchitectureTest {
 
 Aligned with [01-requirements.md §11.1](01-requirements.md#111-version-policy-mandatory) — **Spring Boot 4.x** and **Spring AI 2.0.0** mandatory; use latest stable compatible patches.
 
-| Dependency | Version | Notes |
-|---|---|---|
-| Spring Boot | 4.1.0 | Parent POM — **4.x latest stable** (DEC-012) |
-| Spring AI BOM | 2.0.0 | Mandatory; import in `pom.xml` from M1 |
-| Spring Modulith BOM | 2.1.0 | |
-| Java | 21 | |
-| `spring-boot-starter-web` | (Boot BOM) | REST + Thymeleaf |
-| `spring-boot-starter-thymeleaf` | (Boot BOM) | SSR templates |
-| `spring-boot-starter-jdbc` | (Boot BOM) | NamedParameterJdbcTemplate |
-| `spring-boot-starter-flyway` | (Boot BOM) | Migrations |
-| `flyway-database-postgresql` | (Boot BOM) | |
-| `postgresql` | 42.7.11 | |
-| `spring-modulith-core` | 2.1.0 | `@ApplicationModule` |
-| `spring-ai-starter-model-openai` | 2.0.0 | ChatModel + ToolCalling |
-| `spring-ai-starter-session-jdbc` | 0.3.0 | Session memory (community) |
-| `spring-ai-agent-utils` | 0.10.0 | TodoWrite, AskUserQuestion tools |
-| `spring-ai-starter-mcp-client` | 2.0.0 | MCP client SSE |
-| `caffeine` | 3.2.4 | Local cache |
-| `spring-boot-starter-actuator` | (Boot BOM) | |
-| `spring-boot-starter-security` | (Boot BOM) | |
-| `spring-boot-starter-validation` | (Boot BOM) | |
-| `spring-modulith-starter-test` | 2.1.0 | Modulith verification |
-| Testcontainers | 2.0.5 | Integration tests |
+| Dependency                       | Version    | Notes                                        |
+|----------------------------------|------------|----------------------------------------------|
+| Spring Boot                      | 4.1.0      | Parent POM — **4.x latest stable** (DEC-012) |
+| Spring AI BOM                    | 2.0.0      | Mandatory; import in `pom.xml` from M1       |
+| Spring Modulith BOM              | 2.1.0      |                                              |
+| Java                             | 21         |                                              |
+| `spring-boot-starter-web`        | (Boot BOM) | REST + Thymeleaf                             |
+| `spring-boot-starter-thymeleaf`  | (Boot BOM) | SSR templates                                |
+| `spring-boot-starter-jdbc`       | (Boot BOM) | NamedParameterJdbcTemplate                   |
+| `spring-boot-starter-flyway`     | (Boot BOM) | Migrations                                   |
+| `flyway-database-postgresql`     | (Boot BOM) |                                              |
+| `postgresql`                     | 42.7.11    |                                              |
+| `spring-modulith-core`           | 2.1.0      | `@ApplicationModule`                         |
+| `spring-ai-starter-model-openai` | 2.0.0      | ChatModel + ToolCalling                      |
+| `spring-ai-starter-session-jdbc` | 0.3.0      | Session memory (community)                   |
+| `spring-ai-agent-utils`          | 0.10.0     | TodoWrite, AskUserQuestion tools             |
+| `spring-ai-starter-mcp-client`   | 2.0.0      | MCP client SSE                               |
+| `caffeine`                       | 3.2.4      | Local cache                                  |
+| `spring-boot-starter-actuator`   | (Boot BOM) |                                              |
+| `spring-boot-starter-security`   | (Boot BOM) |                                              |
+| `spring-boot-starter-validation` | (Boot BOM) |                                              |
+| `spring-modulith-starter-test`   | 2.1.0      | Modulith verification                        |
+| Testcontainers                   | 2.0.5      | Integration tests                            |
 
 ### Parent `pom.xml` (single module)
 
@@ -308,29 +308,29 @@ Aligned with [01-requirements.md §11.1](01-requirements.md#111-version-policy-m
 
 ## Key Design Decisions
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| Frontend | Thymeleaf SSR + vanilla JS | Same as `med-expert-match-ce`; no SPA build step, simpler deployment |
-| Streaming | SSE (Server-Sent Events) | Native browser support; `SseEmitter` with 120s timeout |
-| Chat IDs | 24-char hex (ObjectId format) | Same as `med-expert-match-ce`; URL-safe, sortable by time |
-| Modularity | Spring Modulith package modules | Same pattern as `med-expert-match-ce`; `verify()` in CI |
-| API surface | Interface in `service/` / `repository/` | Impl in `*/impl/`; REST/web layer never touches JDBC |
-| Persistence | JDBC only (`NamedParameterJdbcTemplate`) | Consistent with `med-expert-match-ce`; no JPA/Hibernate |
-| SQL externalization | `@InjectSql` + `sql/<module>/*.sql`; named `:bind` only | DEC-013; [ai-architect-6-mcp example](https://github.com/berdachuk/ai-architect-6-mcp/blob/main/src/main/java/com/example/medicalmcp/medicalcase/repository/impl/MedicalCaseRepositoryImpl.java) |
-| LLM client | Spring AI OpenAI-compatible (`OpenAiChatModel`) | Same as med-expert-match-ce; not OpenAI cloud-specific |
-| LLM backend (default) | Ollama `http://localhost:11434/v1` | Local dev default; any OpenAI-compatible API via env override |
-| ChatModel creation | Manual `OpenAiChatModel` via `OpenAiChatModelFactory` | Auto-config excluded; multi-role with lazy init |
-| Session memory | Spring AI Session JDBC (community) | Turn-safe compaction; JTokkit token estimation |
-| MCP optional at runtime | Graceful degradation; no startup failure | Chat is usable without MCP; enrichment is best-effort only |
-| MCP transport | SSE (SYNC) via `McpSyncClient` | Same as ai-architect-6-mcp client config |
-| MCP tool discovery | Startup initialization + `MCPToolAdvisor` | Tools available to LLM on every request |
-| Harness | Generic `ChatWorkflowEngine` ported from reference state machine | Structured workflow with planning, verification, policy gates |
-| Activity bridge | `ChatStreamActivityPublisher` (from reference) | Spring events → SSE `activity` events per session |
-| Agent progress | SSE `activity` + `pipeline_stage` + `agent` events | Same event types as med-expert-match-ce `chat.js` |
-| Security default | Permit-all for local/dev | Same as `med-expert-match-ce` local profile |
-| Structured Output | Spring AI typed response records | JSON schema-constrained generation for tool calls |
-| No graph DB | PostgreSQL only (no Apache AGE) | Chat app doesn't need graph operations |
-| No vector DB | No pgvector extension | Chat app doesn't do semantic search (MCP server handles it) |
+| Decision                | Choice                                                           | Rationale                                                                                                                                                                                        |
+|-------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Frontend                | Thymeleaf SSR + vanilla JS                                       | Same as `med-expert-match-ce`; no SPA build step, simpler deployment                                                                                                                             |
+| Streaming               | SSE (Server-Sent Events)                                         | Native browser support; `SseEmitter` with 120s timeout                                                                                                                                           |
+| Chat IDs                | 24-char hex (ObjectId format)                                    | Same as `med-expert-match-ce`; URL-safe, sortable by time                                                                                                                                        |
+| Modularity              | Spring Modulith package modules                                  | Same pattern as `med-expert-match-ce`; `verify()` in CI                                                                                                                                          |
+| API surface             | Interface in `service/` / `repository/`                          | Impl in `*/impl/`; REST/web layer never touches JDBC                                                                                                                                             |
+| Persistence             | JDBC only (`NamedParameterJdbcTemplate`)                         | Consistent with `med-expert-match-ce`; no JPA/Hibernate                                                                                                                                          |
+| SQL externalization     | `@InjectSql` + `sql/<module>/*.sql`; named `:bind` only          | DEC-013; [ai-architect-6-mcp example](https://github.com/berdachuk/ai-architect-6-mcp/blob/main/src/main/java/com/example/medicalmcp/medicalcase/repository/impl/MedicalCaseRepositoryImpl.java) |
+| LLM client              | Spring AI OpenAI-compatible (`OpenAiChatModel`)                  | Same as med-expert-match-ce; not OpenAI cloud-specific                                                                                                                                           |
+| LLM backend (default)   | Ollama `http://localhost:11434/v1`                               | Local dev default; any OpenAI-compatible API via env override                                                                                                                                    |
+| ChatModel creation      | Manual `OpenAiChatModel` via `OpenAiChatModelFactory`            | Auto-config excluded; multi-role with lazy init                                                                                                                                                  |
+| Session memory          | Spring AI Session JDBC (community)                               | Turn-safe compaction; JTokkit token estimation                                                                                                                                                   |
+| MCP optional at runtime | Graceful degradation; no startup failure                         | Chat is usable without MCP; enrichment is best-effort only                                                                                                                                       |
+| MCP transport           | SSE (SYNC) via `McpSyncClient`                                   | Same as ai-architect-6-mcp client config                                                                                                                                                         |
+| MCP tool discovery      | Startup initialization + `MCPToolAdvisor`                        | Tools available to LLM on every request                                                                                                                                                          |
+| Harness                 | Generic `ChatWorkflowEngine` ported from reference state machine | Structured workflow with planning, verification, policy gates                                                                                                                                    |
+| Activity bridge         | `ChatStreamActivityPublisher` (from reference)                   | Spring events → SSE `activity` events per session                                                                                                                                                |
+| Agent progress          | SSE `activity` + `pipeline_stage` + `agent` events               | Same event types as med-expert-match-ce `chat.js`                                                                                                                                                |
+| Security default        | Permit-all for local/dev                                         | Same as `med-expert-match-ce` local profile                                                                                                                                                      |
+| Structured Output       | Spring AI typed response records                                 | JSON schema-constrained generation for tool calls                                                                                                                                                |
+| No graph DB             | PostgreSQL only (no Apache AGE)                                  | Chat app doesn't need graph operations                                                                                                                                                           |
+| No vector DB            | No pgvector extension                                            | Chat app doesn't do semantic search (MCP server handles it)                                                                                                                                      |
 
 ---
 

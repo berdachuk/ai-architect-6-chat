@@ -11,12 +11,14 @@
 <body>
 <div class="container-fluid app-shell d-flex flex-column p-0">
     <nav class="navbar navbar-light bg-light border-bottom px-3">
+        <button id="sidebarToggle" type="button" class="btn btn-outline-secondary btn-sm me-2 d-md-none"
+                aria-label="Toggle chat list" aria-expanded="false" aria-controls="sidebar">☰</button>
         <span class="navbar-brand mb-0">AI Chat</span>
         <button id="newChatBtn" type="button" class="btn btn-outline-primary btn-sm">+ New Chat</button>
     </nav>
 
     <div class="row app-main-row g-0">
-        <div class="col-md-3 col-lg-2 border-end bg-light d-flex flex-column" id="sidebar">
+        <div class="col-12 col-md-3 col-lg-2 border-end bg-light d-flex flex-column sidebar-collapse" id="sidebar">
             <div class="chat-list flex-grow-1 overflow-auto p-2" id="chatList"></div>
             <div class="p-2 border-top" id="mcpPanel">
                 <div class="d-flex justify-content-between align-items-center mb-1">

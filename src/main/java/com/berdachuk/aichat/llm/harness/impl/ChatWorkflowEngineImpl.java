@@ -59,12 +59,14 @@ public class ChatWorkflowEngineImpl implements ChatWorkflowEngine {
 
         traceStore.record(runId, "TASK_CREATED", Map.of("message", userMessage));
         emitStage(emitter, "TASK_CREATED", "running");
+        emitStage(emitter, "TASK_CREATED", "done");
 
         emitStage(emitter, "PLANNING", "running");
         AgentPlan plan = planner.buildPlan(sessionId, userMessage);
         runStore.updateStateAndPlan(runId, "PLANNING", plan);
         traceStore.record(runId, "PLANNING", Map.of("planId", plan.planId()));
         publishPlan(sessionId, plan);
+        emitStage(emitter, "PLANNING", "done");
 
         emitStage(emitter, "CONTEXT_BUILT", "done");
         traceStore.record(runId, "CONTEXT_BUILT", Map.of());
@@ -80,6 +82,7 @@ public class ChatWorkflowEngineImpl implements ChatWorkflowEngine {
         emitStage(emitter, "VERIFYING", "running");
         VerificationResult verification = verifier.verify(null, responseContent);
         traceStore.record(runId, "VERIFYING", Map.of("passed", verification.passed()));
+        emitStage(emitter, "VERIFYING", verification.passed() ? "done" : "failed");
         if (!verification.passed()) {
             runStore.updateState(runId, "FAILED");
             emitStage(emitter, "FAILED", "failed");
@@ -92,11 +95,13 @@ public class ChatWorkflowEngineImpl implements ChatWorkflowEngine {
             traceStore.record(runId, "POLICY_GATE", Map.of("decision", decision.name()));
             if (decision == PolicyDecision.REJECT) {
                 runStore.updateState(runId, "FAILED");
+                emitStage(emitter, "POLICY_GATE", "failed");
                 emitStage(emitter, "FAILED", "failed");
                 activityPublisher.publish(sessionId, "policy_reject",
                         Map.of("message", "Policy gate rejected empty response"));
                 return HarnessResult.failed(runId, "Policy gate rejected response");
             }
+            emitStage(emitter, "POLICY_GATE", "done");
         }
 
         runStore.updateState(runId, "DONE");

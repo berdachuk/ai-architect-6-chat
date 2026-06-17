@@ -250,6 +250,23 @@ Manual steps (browser + live Ollama/MCP):
 
 **CLI smoke (running app):** `bash scripts/smoke-rest.sh http://localhost:8095`
 
+**Browser E2E (Playwright):**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build --wait
+cd e2e && npm ci && npx playwright install chromium && npm test
+```
+
+CI runs the same Playwright suite in the `e2e` job after `docker compose up --wait`.
+
+| Check | Playwright | Notes |
+|---|---|---|
+| Home UI shell | ✅ `chat-ui.spec.ts` | Composer, MCP panel, navbar |
+| New chat navigation | ✅ | URL `/chat/{id}` |
+| Agent panel collapsed | ✅ | Before first message |
+| Stream token-by-token | manual | Requires Ollama in running stack |
+| MCP tool calls | manual | Requires ai-architect-6-mcp + Ollama |
+
 ---
 
 ## 8. What not to test

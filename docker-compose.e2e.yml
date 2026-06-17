@@ -1,0 +1,5 @@
+# E2E overrides for CI — disable MCP bootstrap to avoid host MCP dependency.
+services:
+  ai-chat:
+    environment:
+      AI_CHAT_MCP_BOOTSTRAP_ENABLED: "false"

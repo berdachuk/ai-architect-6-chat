@@ -88,3 +88,11 @@
 - README aligned with `OLLAMA_*` defaults (`gemma3:4b`)
 - **Plan:** M-12 archived; M-13 active for E2E and Grafana
 
+## 2026-06-17 — M-13 E2E and observability
+
+- Playwright suite in `e2e/` with `chat-ui.spec.ts`
+- CI `e2e` job: `docker compose` + Playwright against `:8095`
+- Grafana dashboard `observability/grafana/ai-chat-overview.json`
+- `docker-compose.e2e.yml` disables MCP bootstrap for CI
+- **Plan:** M-13 archived; M-14 active for production hardening
+

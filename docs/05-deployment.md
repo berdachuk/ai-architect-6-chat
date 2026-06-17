@@ -67,6 +67,18 @@ Set `SPRING_PROFILES_ACTIVE=prod` in production. Override health detail exposure
 
 **Metrics:** with `prod` profile, scrape `GET /actuator/prometheus` (requires `micrometer-registry-prometheus`).
 
+**Grafana:** import [observability/grafana/ai-chat-overview.json](../observability/grafana/ai-chat-overview.json) and point at your Prometheus datasource. Scrape target example:
+
+```yaml
+scrape_configs:
+  - job_name: ai-chat
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['localhost:8095']
+```
+
+Run with `SPRING_PROFILES_ACTIVE=prod` so the Prometheus endpoint is exposed.
+
 ### User identity and OAuth2 (optional)
 
 **Default (no OAuth2):** `ai-chat.security.oauth2-enabled: false` — all endpoints are open. User id comes from the `X-User-Id` header or `aichat-user-id` cookie (fallback `anonymous`). Use this for local dev and automated tests.

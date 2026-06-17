@@ -52,7 +52,7 @@
 ## 3. Test layout
 
 ```text
-src/test/java/com/example/aichat/
+src/test/java/com/berdachuk/aichat/
 ├── ModulithArchitectureTest.java
 ├── chat/
 │   ├── domain/

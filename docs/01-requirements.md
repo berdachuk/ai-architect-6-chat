@@ -44,6 +44,7 @@ The application mirrors the chat, session, harness, and LLM connection patterns 
 | LLM backend (default) | **Ollama** at `http://localhost:11434/v1` |
 | Primary Model | `gemma4:31b-cloud` |
 | Alternative Model | `gemma4:12b` |
+| Base package | `com.berdachuk.aichat` (organization namespace `com.berdachuk`; same convention as `com.berdachuk.medexpertmatch` in med-expert-match-ce) |
 
 ---
 
@@ -131,6 +132,7 @@ ai-chat uses a **split architecture**:
 - **Session memory** — conversation context mixed into each request via `SessionMemoryAdvisor`
 - **Thymeleaf SSR frontend** — vanilla JS + Bootstrap 5.3, no SPA framework
 - **Spring Modulith** package modules with `allowedDependencies` (same pattern as `med-expert-match-ce`)
+- **Base package `com.berdachuk.aichat`** — all application code under `com.berdachuk.aichat.{core,chat,llm,mcp,web,system}`; do not use `com.example` or other placeholder namespaces
 - **Interface / implementation separation** — public contracts in `service/` and `repository/`; JDBC code only in `impl/` subpackages
 - **JDBC only** — `NamedParameterJdbcTemplate`, no JPA/Hibernate
 
@@ -566,7 +568,7 @@ Single deployable Spring Boot application using **package-based modules**. Each 
 ### Package modules
 
 ```
-src/main/java/com/example/aichat/
+src/main/java/com/berdachuk/aichat/
 ├── AiChatApplication.java
 ├── core/              # Shared config, security, health, util
 ├── chat/              # Chat domain, repository, service, REST controller

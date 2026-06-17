@@ -78,7 +78,7 @@ ai-chat/
 ├── Dockerfile
 └── src/
     ├── main/
-    │   ├── java/com/example/aichat/
+    │   ├── java/com/berdachuk/aichat/
     │   │   ├── AiChatApplication.java
     │   │   ├── core/                         # config, security, health, util
     │   │   │   ├── config/
@@ -176,7 +176,7 @@ ai-chat/
     │           └── js/
     │               ├── chat.js
     │               └── main.js
-    └── test/java/com/example/aichat/
+    └── test/java/com/berdachuk/aichat/
         ├── ModulithArchitectureTest.java
         ├── chat/
         │   ├── repository/ChatRepositoryImplTest.java
@@ -195,27 +195,27 @@ ai-chat/
 ```java
 // core/package-info.java
 @ApplicationModule(allowedDependencies = {})
-package com.example.aichat.core;
+package com.berdachuk.aichat.core;
 
 // chat/package-info.java
 @ApplicationModule(allowedDependencies = "core :: *")
-package com.example.aichat.chat;
+package com.berdachuk.aichat.chat;
 
 // llm/package-info.java
 @ApplicationModule(allowedDependencies = {"core :: *", "chat :: *", "mcp :: *"})
-package com.example.aichat.llm;
+package com.berdachuk.aichat.llm;
 
 // mcp/package-info.java
 @ApplicationModule(allowedDependencies = {"core :: *"})
-package com.example.aichat.mcp;
+package com.berdachuk.aichat.mcp;
 
 // web/package-info.java
 @ApplicationModule(allowedDependencies = {"core :: *", "chat :: *", "llm :: *"})
-package com.example.aichat.web;
+package com.berdachuk.aichat.web;
 
 // system/package-info.java
 @ApplicationModule(allowedDependencies = {"core :: *", "mcp :: *"})
-package com.example.aichat.system;
+package com.berdachuk.aichat.system;
 ```
 
 ### Interface / implementation convention

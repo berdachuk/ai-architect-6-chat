@@ -112,9 +112,9 @@ ai-chat:
 
 logging:
   level:
-    com.example.aichat: INFO
-    com.example.aichat.llm: DEBUG
-    com.example.aichat.mcp: DEBUG
+    com.berdachuk.aichat: INFO
+    com.berdachuk.aichat.llm: DEBUG
+    com.berdachuk.aichat.mcp: DEBUG
     org.springframework.ai.mcp: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

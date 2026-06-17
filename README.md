@@ -21,6 +21,7 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 | Database | PostgreSQL 17 (`ai_chat` schema) |
 | LLM client | Spring AI OpenAI-compatible (`OpenAiChatModel`) |
 | LLM backend (default) | Ollama (`http://localhost:11434/v1`) |
+| Base package | `com.berdachuk.aichat` |
 | MCP transport | SSE (`McpSyncClient`) |
 
 ---
@@ -46,7 +47,7 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 Single deployable Spring Boot app with package-based Modulith modules:
 
 ```text
-src/main/java/com/example/aichat/
+src/main/java/com/berdachuk/aichat/
 ├── core/     # Config, security, OpenAiChatModelFactory, IdGenerator
 ├── chat/     # Sessions, messages, REST /api/v1/chats
 ├── llm/      # ChatAssistantService, Harness, SessionMemoryAdvisor, activity publisher
@@ -196,6 +197,8 @@ Full index: **[docs/README.md](docs/README.md)**
 | [03-design.md](docs/03-design.md) | Detailed design (SDD) — schema, services, frontend |
 | [04-testing.md](docs/04-testing.md) | Test strategy and CI gates |
 | [05-deployment.md](docs/05-deployment.md) | Config, Docker, env vars, Ollama, MCP |
+| [AGENTS.md](AGENTS.md) | AI agent index (skills, memory bank) |
+| [ai-context-strategy.md](docs/ai-context-strategy.md) | Agent context architecture |
 
 Reading order: Requirements → Architecture → Design → Testing → Deployment → Implement.
 

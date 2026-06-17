@@ -148,7 +148,7 @@ mvn verify -Pintegration        # + Testcontainers Flyway IT (DEC-009)
 # Local run (needs PostgreSQL)
 docker run -d --name ai-chat-postgres \
   -e POSTGRES_DB=ai_chat -e POSTGRES_USER=ai_chat -e POSTGRES_PASSWORD=ai_chat \
-  -p 5432:5432 postgres:17
+  -p 5437:5432 postgres:17
 mvn spring-boot:run
 ```
 

@@ -735,7 +735,7 @@ spring:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
       - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
   datasource:
-    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:5432/${AICHAT_DB_NAME:ai_chat}
+    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:${AICHAT_DB_PORT:5437}/${AICHAT_DB_NAME:ai_chat}?currentSchema=ai_chat
     username: ${AICHAT_DB_USERNAME:ai_chat}
     password: ${AICHAT_DB_PASSWORD:ai_chat}
     hikari:
@@ -823,6 +823,7 @@ ai-chat:
 | Variable | Default | Description |
 |---|---|---|
 | `AICHAT_DB_HOST` | `localhost` | PostgreSQL host |
+| `AICHAT_DB_PORT` | `5437` | PostgreSQL port |
 | `AICHAT_DB_NAME` | `ai_chat` | Database name |
 | `AICHAT_DB_USERNAME` | `ai_chat` | DB user |
 | `AICHAT_DB_PASSWORD` | `ai_chat` | DB password |
@@ -849,7 +850,7 @@ ai-chat:
 | M1 | Schema + modulith foundation | `V1__init_chat_schema.sql`, domain records, `package-info.java`, Boot stub, `ModulithArchitectureTest` | `mvn test` passes; schema migrates | ✅ |
 | M2 | Chat session CRUD | `ChatRepository`, `ChatService`, `ChatController` REST | Create/list/rename/delete/history; default chat auto-created | ✅ |
 | M3 | LLM integration | `SpringAIConfig`, `OpenAiChatModelFactory`, `ChatAssistantService`, SSE `token`/`done` | Stream response from Ollama; **works with MCP disabled** | ✅ |
-| M4 | Session memory | Session JDBC, compaction, `SessionMemoryAdvisor`, `DateTimeContextAdvisor` | 20+ turn dialog retains context; compaction fires at threshold | ⬜ |
+| M4 | Session memory | Session JDBC, compaction, `SessionMemoryAdvisor`, `DateTimeContextAdvisor` | 20+ turn dialog retains context; compaction fires at threshold | ✅ |
 | M5 | Harness engine | `ChatWorkflowEngine`, planner/verifier/policy, `ChatStreamActivityPublisher` | Agent panel shows `pipeline_stage` + `activity` events | ⬜ |
 | M6 | Frontend | `chat.html`, `chat.js`, sidebar, composer, agent panel | Full chat UX in browser; session switch/delete works | ⬜ |
 

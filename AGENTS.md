@@ -1,6 +1,6 @@
 # AGENTS.md — ai-architect-6-chat (`ai-chat`)
 
-General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **M3 implemented** — Spring AI 2.0, Ollama client, SSE streaming. Next: M4 per [docs/01-requirements.md](docs/01-requirements.md).
+General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **M4 implemented** — Session JDBC, advisors, turn-window compaction. Next: M5 per [docs/01-requirements.md](docs/01-requirements.md).
 
 **Stack:** Java 21 · Spring Boot 4.1 · Spring AI 2.0 · Spring Modulith · PostgreSQL 17 · Thymeleaf SSR · Ollama (OpenAI-compatible client)
 

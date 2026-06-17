@@ -25,3 +25,10 @@
 - Test profile stub `ChatModel`; `ChatStreamControllerIntegrationTest`
 - **Plan:** M-04 archived; M-05 active for M4 session memory
 
+## 2026-06-17 — M4 Session memory + advisors
+
+- `spring-ai-starter-session-jdbc` 0.3.0, Flyway `V2__init_session_schema.sql`
+- `DateTimeContextAdvisor`, `SessionMemoryAdvisor`, turn-window compaction
+- Session ID `{userId}-{chatId}`; default DB port `5437`
+- **Plan:** M-05 archived; M-06 active for M5 harness
+

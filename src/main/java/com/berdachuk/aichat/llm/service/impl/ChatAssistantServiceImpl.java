@@ -5,6 +5,7 @@ import com.berdachuk.aichat.chat.service.ChatService;
 import com.berdachuk.aichat.llm.service.ChatAssistantService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.session.advisor.SessionMemoryAdvisor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,11 @@ public class ChatAssistantServiceImpl implements ChatAssistantService {
         chatService.requireOwnedChat(userId, chatId);
         chatService.appendUserMessage(chatId, userMessage);
         try {
-            String content = chatClient.prompt().user(userMessage).call().content();
+            String content = chatClient.prompt()
+                    .user(userMessage)
+                    .advisors(sessionAdvisors(userId, chatId))
+                    .call()
+                    .content();
             chatService.appendAssistantMessage(chatId, content, estimateTokens(content), Map.of());
             return content;
         } catch (RuntimeException ex) {
@@ -52,7 +57,11 @@ public class ChatAssistantServiceImpl implements ChatAssistantService {
 
         Flux<ChatResponse> flux;
         try {
-            flux = chatClient.prompt().user(userMessage).stream().chatResponse();
+            flux = chatClient.prompt()
+                    .user(userMessage)
+                    .advisors(sessionAdvisors(userId, chatId))
+                    .stream()
+                    .chatResponse();
         } catch (RuntimeException ex) {
             sendErrorAndComplete(emitter, ex);
             return emitter;
@@ -101,5 +110,12 @@ public class ChatAssistantServiceImpl implements ChatAssistantService {
 
     private static int estimateTokens(String content) {
         return content == null || content.isEmpty() ? 0 : Math.max(1, content.length() / 4);
+    }
+
+    private static java.util.function.Consumer<ChatClient.AdvisorSpec> sessionAdvisors(String userId, String chatId) {
+        String sessionId = userId + "-" + chatId;
+        return spec -> spec
+                .param(SessionMemoryAdvisor.SESSION_ID_CONTEXT_KEY, sessionId)
+                .param(SessionMemoryAdvisor.USER_ID_CONTEXT_KEY, userId);
     }
 }

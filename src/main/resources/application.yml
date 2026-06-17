@@ -10,7 +10,7 @@ spring:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
       - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
   datasource:
-    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:5432/${AICHAT_DB_NAME:ai_chat}
+    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:${AICHAT_DB_PORT:5437}/${AICHAT_DB_NAME:ai_chat}?currentSchema=ai_chat
     username: ${AICHAT_DB_USERNAME:ai_chat}
     password: ${AICHAT_DB_PASSWORD:ai_chat}
   flyway:
@@ -41,6 +41,17 @@ spring:
         model: ${OLLAMA_TOOL_MODEL:gemma3:4b}
         temperature: 0.3
         max-tokens: 4096
+    session:
+      repository:
+        jdbc:
+          initialize-schema: never
+      jdbc:
+        schema: ai_chat
+        compaction:
+          strategy: turn-window
+          max-turns: 20
+          max-tokens: 4000
+          window-turns: 30
 
 server:
   port: ${SERVER_PORT:8095}

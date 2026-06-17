@@ -4,15 +4,15 @@
 
 ## Current focus
 
-**M3 complete.** Next: **M4** — session memory per [M-05-m4-session-memory.md](../plans/M-05-m4-session-memory.md).
+**M4 complete.** Next: **M5** — Harness workflow engine per [M-06-m5-harness-engine.md](../plans/M-06-m5-harness-engine.md).
 
 ## In progress
 
-- [x] M1–M3 complete
-- [ ] M4: Session JDBC, advisors, compaction
+- [x] M1–M4 complete
+- [ ] M5: Harness engine, activity SSE publisher
 
 ## Next steps
 
-1. `spring-ai-starter-session-jdbc` + Flyway session schema
-2. `SessionMemoryAdvisor`, `DateTimeContextAdvisor`
-3. Wire advisors into `ChatAssistantService`
+1. `ChatWorkflowEngine` + `ChatStreamActivityPublisher`
+2. Wire harness into `ChatAssistantService.streamMessage`
+3. IT for `activity` / `pipeline_stage` SSE events

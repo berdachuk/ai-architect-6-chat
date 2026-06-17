@@ -22,3 +22,14 @@ spring:
         model: stub-model
         temperature: 0.3
         max-tokens: 1024
+    session:
+      repository:
+        jdbc:
+          initialize-schema: never
+      jdbc:
+        schema: ai_chat
+        compaction:
+          strategy: turn-window
+          max-turns: 20
+          max-tokens: 4000
+          window-turns: 30

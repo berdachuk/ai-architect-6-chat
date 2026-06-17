@@ -15,13 +15,6 @@ public class SpringAIConfig {
 
     @Bean
     @Lazy
-    ChatClient primaryChatClient(OpenAiChatModelFactory factory, AiChatProperties props) {
-        OpenAiChatModel model = factory.create(props.chat());
-        return ChatClient.builder(model).build();
-    }
-
-    @Bean
-    @Lazy
     ChatClient toolCallingChatClient(OpenAiChatModelFactory factory, AiChatProperties props) {
         OpenAiChatModel model = factory.create(props.toolCalling());
         return ChatClient.builder(model).build();

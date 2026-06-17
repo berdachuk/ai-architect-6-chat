@@ -22,7 +22,7 @@ spring:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
       - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
   datasource:
-    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:5432/${AICHAT_DB_NAME:ai_chat}
+    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:${AICHAT_DB_PORT:5437}/${AICHAT_DB_NAME:ai_chat}?currentSchema=ai_chat
     username: ${AICHAT_DB_USERNAME:ai_chat}
     password: ${AICHAT_DB_PASSWORD:ai_chat}
     driver-class-name: org.postgresql.Driver
@@ -147,6 +147,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 | Variable | Default | Description |
 |---|---|---|
 | `AICHAT_DB_HOST` | `localhost` | PostgreSQL host |
+| `AICHAT_DB_PORT` | `5437` | PostgreSQL port |
 | `AICHAT_DB_NAME` | `ai_chat` | Database name |
 | `AICHAT_DB_USERNAME` | `ai_chat` | DB user |
 | `AICHAT_DB_PASSWORD` | `ai_chat` | DB password |
@@ -339,7 +340,7 @@ docker run -d --name ai-chat-postgres \
   -e POSTGRES_DB=ai_chat \
   -e POSTGRES_USER=ai_chat \
   -e POSTGRES_PASSWORD=ai_chat \
-  -p 5432:5432 \
+  -p 5437:5432 \
   postgres:17
 ```
 

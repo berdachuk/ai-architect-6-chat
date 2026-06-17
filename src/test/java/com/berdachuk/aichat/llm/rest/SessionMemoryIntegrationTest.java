@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -22,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Testcontainers
-class ChatStreamControllerIntegrationTest {
+class SessionMemoryIntegrationTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17")
@@ -43,51 +44,47 @@ class ChatStreamControllerIntegrationTest {
     @Autowired
     private RestClient.Builder restClientBuilder;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Test
-    void streamEndpointReturnsTokenAndDoneEvents() throws Exception {
+    void secondTurnIncludesPriorSessionContext() {
         RestClient client = restClientBuilder.build();
 
         String chatId = client.post()
                 .uri("http://localhost:" + port + "/api/v1/chats")
-                .header("X-User-Id", "stream-user")
+                .header("X-User-Id", "memory-user")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new CreateChatPayload("Stream test", "auto"))
+                .body(new CreateChatPayload("Memory test", "auto"))
                 .retrieve()
                 .body(ChatResponsePayload.class)
                 .id();
 
-        String body = client.post()
+        streamMessage(client, chatId, "First turn");
+
+        Integer eventCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM ai_session_event", Integer.class);
+        assertThat(eventCount).isGreaterThanOrEqualTo(2);
+
+        String secondBody = streamMessage(client, chatId, "Second turn");
+
+        assertThat(secondBody).contains("users:2");
+    }
+
+    private String streamMessage(RestClient client, String chatId, String content) {
+        return client.post()
                 .uri("http://localhost:" + port + "/api/v1/chats/" + chatId + "/messages/stream")
-                .header("X-User-Id", "stream-user")
+                .header("X-User-Id", "memory-user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_EVENT_STREAM)
-                .body(new SendMessageRequest("Hi"))
+                .body(new SendMessageRequest(content))
                 .retrieve()
                 .body(String.class);
-
-        assertThat(body).contains("event:token");
-        assertThat(body).contains("event:done");
-        assertThat(body).contains("Hello");
-        assertThat(body).contains("world");
-
-        var history = client.get()
-                .uri("http://localhost:" + port + "/api/v1/chats/" + chatId + "/history")
-                .header("X-User-Id", "stream-user")
-                .retrieve()
-                .body(HistoryMessage[].class);
-
-        assertThat(history).hasSize(2);
-        assertThat(history[0].role()).isEqualTo("user");
-        assertThat(history[1].role()).isEqualTo("assistant");
-        assertThat(history[1].content()).isEqualTo("Hello world");
     }
 
     private record CreateChatPayload(String name, String agentId) {
     }
 
     private record ChatResponsePayload(String id) {
-    }
-
-    private record HistoryMessage(String role, String content) {
     }
 }

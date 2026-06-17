@@ -70,7 +70,8 @@ public class UserContext {
       if (claim != null && !claim.toString().isBlank()) {
         return Optional.of(claim.toString());
       }
-      if (oauth2User.getName() != null && !oauth2User.getName().isBlank()) {
+        oauth2User.getName();
+        if (!oauth2User.getName().isBlank()) {
         return Optional.of(oauth2User.getName());
       }
     }

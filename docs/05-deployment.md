@@ -159,7 +159,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 | `TOOL_CALLING_BASE_URL` | `http://localhost:11434/v1` | Tool-calling model endpoint |
 | `TOOL_CALLING_API_KEY` | `none` | API key for tool-calling model |
 | `TOOL_CALLING_MODEL` | `functiongemma:270m` | Tool-calling model name |
-| `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | Medical MCP server SSE endpoint |
+| `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (`medical-dataset` connection) |
 | `SERVER_PORT` | `8080` | Application port |
 
 ---
@@ -243,14 +243,16 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 ---
 
-## MCP Client Connection
+## MCP Client Connection (optional)
 
-### `medical-mcp-server` (required)
+MCP enrichment is **optional**. The chat application starts and operates normally without ai-architect-6-mcp. Connect the MCP server only when tool enrichment is needed (phase 2).
 
-The `medical-mcp-server` must be running on port `8092` for MCP tool enrichment. Start it from `/home/berdachuk/projects-ai-architect/ai-architect-6-mcp`:
+### ai-architect-6-mcp (phase 2)
+
+To enable MCP enrichment, [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) (`medical-mcp-server`) should be running on port `8092`. If it is not running, ai-chat still starts; the health indicator reports MCP DOWN and chat proceeds without tools.
 
 ```bash
-cd /home/berdachuk/projects-ai-architect/ai-architect-6-mcp
+cd ai-architect-6-mcp
 docker compose up -d
 # or: mvn spring-boot:run
 ```
@@ -340,19 +342,17 @@ docker run -d --name ai-chat-postgres \
 ### Start the application
 
 ```bash
-cd /home/berdachuk/projects-ai-architect/ai-architect-6-chat
+# From repository root (ai-architect-6-chat)
 mvn spring-boot:run
 ```
 
-### Start with MCP server
+### Start with MCP server (phase 2)
 
 ```bash
-# Terminal 1: Start medical-mcp-server
-cd /home/berdachuk/projects-ai-architect/ai-architect-6-mcp
-mvn spring-boot:run
+# Terminal 1 — ai-architect-6-mcp
+cd ../ai-architect-6-mcp && mvn spring-boot:run
 
-# Terminal 2: Start ai-chat
-cd /home/berdachuk/projects-ai-architect/ai-architect-6-chat
+# Terminal 2 — ai-architect-6-chat
 mvn spring-boot:run
 ```
 
@@ -380,6 +380,8 @@ Open `http://localhost:8080/` in a browser.
 
 ## Related documentation
 
+- [README.md](README.md) — documentation index and naming
+- [../README.md](../README.md) — project overview
 - [01-requirements.md](01-requirements.md) — env vars (§13) and configuration (§12)
 - [02-architecture.md](02-architecture.md) — stack and security defaults
 - [03-design.md](03-design.md) — service and MCP implementation

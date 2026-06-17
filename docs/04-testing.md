@@ -10,14 +10,14 @@
 
 | Goal | How |
 |---|---|
-| **Correctness** | Chat CRUD operations, message persistence, session memory compaction |
+| **Correctness** | Chat CRUD, message persistence, session memory; **chat streams without MCP** |
 | **Contract** | REST API shapes stable, SSE event format consistent |
-| **Integration** | MCP client connects to `medical-mcp-server`, tools are callable |
+| **Integration** | MCP client connects to ai-architect-6-mcp (`medical-mcp-server`), tools are callable |
 | **Modulith boundaries** | `ApplicationModules.of(...).verify()` passes — no illegal cross-module deps |
 | **Streaming** | SSE token delivery, agent activity events, completion signal |
 | **Regression** | Modulith verification on every build |
 
-**Non-goals:** Testing LLM output quality (non-deterministic). Testing Ollama availability (external dependency). Testing MCP server correctness (belongs to `medical-mcp-server` test suite).
+**Non-goals:** Testing LLM output quality (non-deterministic). Testing Ollama availability (external dependency). Testing MCP server correctness (belongs to [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) test suite).
 
 ---
 
@@ -68,8 +68,8 @@ src/test/java/com/example/aichat/
 │   └── advisor/
 │       └── MCPToolAdvisorTest.java           # Tool definition injection
 ├── mcp/
-│   └── tool/
-│       └── McpToolProviderTest.java          # Tool callback wrapping
+│   └── registry/
+│       └── McpServerRegistryTest.java          # Tool callback wrapping, catalog text
 └── integration/
     ├── AbstractPostgresIntegrationTest.java   # @Testcontainers PG 17
     ├── FlywaySchemaIntegrationTest.java       # Schema creation, indexes
@@ -96,8 +96,8 @@ src/test/resources/
 | `ChatServiceImpl` | Default chat creation, delete + recreate logic, auto-naming from first message |
 | `AgentPlannerServiceImpl` | Parses valid JSON plan, handles malformed JSON gracefully |
 | `AgentResponseVerifier` | Detects missing tool outputs, validates against acceptance criteria |
-| `McpToolProvider` | Wraps MCP tool definitions as ToolCallback, formats tool text for LLM |
-| `MCPToolAdvisor` | Injects tool definitions into system text, provides tool callbacks |
+| `McpServerRegistry` | Wraps MCP tool definitions as ToolCallback, formats tool catalog for LLM |
+| `MCPToolAdvisor` | Injects tool catalog into system text, provides tool callbacks; no-op when no servers UP |
 | `OpenAiChatModelFactory` | URL normalization (appends `/v1`), model options mapping |
 
 ### 4.2 Modulith boundary test
@@ -120,9 +120,10 @@ Runs on every `mvn test` — blocks illegal cross-module dependencies.
 
 | Test class | Verifies |
 |---|---|
-| `FlywaySchemaIntegrationTest` | Schema `ai_chat` exists, tables `chat` + `chat_message` created, indexes present, CHECK constraint on `role` |
+| `FlywaySchemaIntegrationTest` | Schema `ai_chat` exists; `V1` chat tables + indexes; `V2` harness tables (M5+) |
 | `ChatControllerIntegrationTest` | Full CRUD cycle: create → list → get history → rename → delete → default recreation |
-| `ChatStreamingIntegrationTest` | SSE endpoint returns `text/event-stream`, token events, done event; mocked ChatClient |
+| `ChatStreamingIntegrationTest` | SSE endpoint returns `text/event-stream`, token/done events; mocked ChatClient; **passes with `ai-chat.features.mcp-client: false`** |
+| `McpUnavailableStartupTest` | App context loads when MCP URL points to dead host; chat stream endpoint still responds |
 | `McpClientIntegrationTest` | WireMock MCP server → `McpSyncClient` initialization → tool listing → tool calling |
 
 ### 4.4 REST API contract tests
@@ -146,11 +147,11 @@ Runs on every `mvn test` — blocks illegal cross-module dependencies.
 
 | Event | Data shape |
 |---|---|
-| `token` | String (plain text or JSON `{"text": "..."}`) |
-| `activity` | `{"type": "tool_call", "name": "...", "arguments": {...}}` |
-| `agent` | `{"type": "agent_start", "name": "..."}` or `{"type": "agent_done", "summary": "..."}` |
-| `pipeline_stage` | `{"stage": "PLANNING"}` |
-| `done` | `{"messageId": "...", "tokensUsed": N}` |
+| `token` | `{"t":"<chunk>"}` (JSON) |
+| `activity` | `{"type":"tool_call","toolName":"...","message":"..."}` |
+| `agent` | `{"type":"agent_start","agentId":"..."}` or `{"type":"agent_done",...}` |
+| `pipeline_stage` | `{"stage":"PLANNING","agent":"...","status":"...","timestampMs":N}` |
+| `done` | `{"id":"...","content":"..."}` |
 
 ### 4.6 MCP client integration (WireMock)
 
@@ -169,7 +170,7 @@ class McpClientIntegrationTest {
     @Test
     void shouldDiscoverAndCallMcpTools() {
         // WireMock stubs MCP SSE handshake + tool list + tool call
-        // Verify McpToolProvider returns tool callbacks
+        // Verify McpServerRegistry returns tool callbacks
         // Verify tool call through McpSyncClient returns expected result
     }
 }
@@ -228,12 +229,13 @@ jobs:
 - [ ] App starts on `:8080`, health endpoint returns UP
 - [ ] Open `http://localhost:8080/` → redirected to default chat
 - [ ] Sidebar shows "New Chat" (default)
+- [ ] Type message with **no MCP server running** → streaming LLM response still works
 - [ ] Type message → streaming response appears token-by-token
 - [ ] Agent panel shows activity entries (if MCP tools called)
 - [ ] Create new chat → appears in sidebar
 - [ ] Switch between chats → history loads correctly
 - [ ] Delete chat → removed from sidebar, default recreated if last
-- [ ] MCP server (`medical-mcp-server`) connected → tools available in chat
+- [ ] ai-architect-6-mcp (`medical-mcp-server`) connected → tools available in chat
 - [ ] Ask "list medical specialties" → LLM calls `list_specialties` MCP tool → response includes specialties
 - [ ] Ask "search for cardiovascular cases" → LLM calls `search_cases` MCP tool → response includes cases
 
@@ -245,7 +247,7 @@ jobs:
 |---|---|
 | LLM response quality | Non-deterministic; out of scope |
 | Ollama availability | External dependency; mocked in tests |
-| MCP server correctness | Belongs to `medical-mcp-server` test suite |
+| MCP server correctness | Belongs to [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) test suite |
 | Browser rendering | Thymeleaf SSR; manual smoke test sufficient |
 | Session memory compaction | Spring AI Session JDBC library responsibility |
 | Structured Output JSON schema | Spring AI library responsibility |
@@ -254,6 +256,8 @@ jobs:
 
 ## Related documentation
 
+- [README.md](README.md) — documentation index and naming
+- [../README.md](../README.md) — project overview
 - [01-requirements.md](01-requirements.md) — SRS with milestones
 - [02-architecture.md](02-architecture.md) — Modulith modules and design decisions
 - [03-design.md](03-design.md) — service and MCP implementation

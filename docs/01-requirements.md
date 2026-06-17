@@ -7,7 +7,7 @@
 **Author:** Siarhei Berdachuk
 **Status:** Draft
 **Reference pattern:** [med-expert-match-ce](https://github.com/berdachuk/med-expert-match-ce)
-**MCP backend:** [medical-mcp-server](../ai-architect-6-mcp)
+**MCP backend:** [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) (`medical-mcp-server`, port `8092`)
 
 ### Related documents
 
@@ -27,6 +27,8 @@
 
 The application mirrors the chat, session, harness, and LLM connection patterns from [`med-expert-match-ce`](https://github.com/berdachuk/med-expert-match-ce), stripped of graph databases (Apache AGE), medical domain entities, and evaluation frameworks — keeping only what is necessary for a general-purpose AI chat with MCP enrichment.
 
+**MCP is optional at runtime.** The chat must remain fully functional — sessions, streaming, session memory, Harness progress — when no MCP server is configured, unreachable at startup, or fails mid-session. MCP only adds context enrichment when available; it is never a hard dependency for core chat.
+
 **Runtime identity**
 
 | Property | Value |
@@ -44,6 +46,71 @@ The application mirrors the chat, session, harness, and LLM connection patterns 
 
 ---
 
+## 1.1 Reference analysis
+
+### med-expert-match-ce — what to reuse
+
+Analyzed at HEAD (2026-06-17). The chat subsystem lives in three packages:
+
+| Package | Key artifacts | Reuse for ai-chat |
+|---|---|---|
+| `chat/` | `ChatController`, `ChatService`, `ChatRepository`, domain records, `sql/chat/*` | **Port directly** (rename schema to `ai_chat`) |
+| `llm/` | `ChatAssistantServiceImpl`, `ChatStreamActivityPublisherImpl`, session beans in `MedicalAgentConfiguration` | **Port patterns** — strip medical routing |
+| `web/` | `ChatWebController`, `chat.html`, `chat.js`, `chat.css` | **Port UI** — remove medical explainability panels |
+| `core/` | `SpringAIConfig`, `OpenAiChatModelFactory`, `DateTimeContextAdvisor` | **Port directly** |
+
+**Critical finding:** med-expert-match-ce has **no MCP client**. Tool calling uses Spring AI `@Tool` beans and `spring-ai-agent-utils` (`TodoWriteTool`, `AskUserQuestionTool`, `SkillsTool`). ai-chat adds MCP as a **new capability** via `spring-ai-starter-mcp-client`.
+
+**Harness in reference:** medical-specific engines (`DoctorMatchWorkflowEngine`, `RoutingWorkflowEngine`, `CaseIntakeWorkflowEngine`). ai-chat introduces a **generic** `ChatWorkflowEngine` with the same state machine and SSE progress pattern, without medical domain steps.
+
+**Advisor chain (reference `medicalAgentChatClient`):**
+
+1. `DateTimeContextAdvisor`
+2. `ToolCallingAdvisor` (`conversationHistoryEnabled: false`)
+3. `SessionMemoryAdvisor` (JDBC + turn-window compaction)
+4. `SimpleLoggerAdvisor`
+
+ai-chat extends this with `MCPToolAdvisor` (position 2) when MCP is enabled.
+
+**SSE contract (reference `ChatAssistantServiceImpl` + `chat.js`):**
+
+| Event | Payload |
+|---|---|
+| `token` | `{"t":"<chunk>"}` |
+| `done` | `{"id":"<msgId>","content":"<full text>", ...}` |
+| `agent` | `{"type":"agent_start"\|"agent_done","agentId":"..."}` |
+| `activity` | `{"type":"tool_call"\|"reasoning"\|"todo_update"\|"llm_call"\|"llm_turn_summary", ...}` |
+| `pipeline_stage` | `{"stage":"PLANNING","agent":"...","status":"...","timestampMs":N}` |
+
+Activity events are bridged from Spring application events via `ChatStreamActivityPublisherImpl` (registers `SseEmitter` per `sessionId = userId-chatId`).
+
+### ai-architect-6-mcp — integration contract
+
+| Property | Value |
+|---|---|
+| SSE URL | `http://localhost:8092/sse` |
+| Message endpoint | `POST /mcp/message` |
+| Protocol | MCP SYNC over HTTP+SSE |
+| Tools | `search_cases`, `get_case`, `semantic_search`, `list_specialties`, `get_dataset_stats` |
+| Resources | `medical://cases/{id}`, `medical://stats` |
+| Prompts | `case-analysis` (template only — LLM runs on client side) |
+
+Connection is configured in phase 2 (milestone M8). When the server is unreachable, the chat must degrade gracefully — tools omitted, health indicator reports DOWN, **streaming chat continues**.
+
+### LLM model divergence from reference
+
+med-expert-match-ce routes the **entire** `medicalAgentChatClient` through `toolCallingChatModel` (functiongemma) because its primary clinical model lacks reliable tool calling.
+
+ai-chat uses a **split architecture**:
+
+| Role | Model | Used for |
+|---|---|---|
+| Chat (primary) | `gemma4:31b-cloud` | Reasoning, streaming response, structured output |
+| Chat (alt) | `gemma4:12b` | Lighter fallback when configured or on primary failure |
+| Tool calling | `functiongemma:270m` | MCP tool invocation only (`ToolCallingAdvisor`) |
+
+---
+
 ## 2. Goals & Non-Goals
 
 ### Goals
@@ -51,12 +118,14 @@ The application mirrors the chat, session, harness, and LLM connection patterns 
 - **Multi-session chat** — create, list, rename, delete chat sessions; each session has its own message history
 - **Streaming responses** — SSE-based token-by-token streaming to the browser
 - **Long dialog support** — Spring AI Session JDBC with turn-safe compaction (max 20 turns / 4000 tokens window)
-- **MCP client integration** — connect to one or more MCP servers over SSE transport; auto-discover available tools
-- **Automatic MCP tool selection** — the LLM decides which MCP tools to call based on conversation context
+- **MCP client integration** — connect to one or more MCP servers over SSE transport when available; auto-discover tools
+- **Chat without MCP** — core chat (CRUD, SSE streaming, session memory, Harness UI) works with zero MCP servers; startup must not fail if MCP is down
+- **Automatic MCP server awareness** — on startup, discover tools/resources/prompts from each configured MCP connection; expose catalog to LLM per turn
+- **Automatic MCP tool selection** — the LLM decides which MCP tools to call based on conversation context (via `ToolCallingAdvisor` + `functiongemma`)
 - **Harness workflow engine** — structured agent execution with planning, tool execution, verification, and policy gates
 - **Agent progress display** — real-time SSE events showing agent activity (tool calls, reasoning, plan updates)
 - **Structured Output** — LLM responses with typed JSON output where applicable
-- **Multi-role LLM architecture** — separate models for chat (clinical-tier) and tool-calling (utility-tier)
+- **Multi-role LLM architecture** — separate models for chat (`gemma4`) and tool-calling (`functiongemma`)
 - **Session memory** — conversation context mixed into each request via `SessionMemoryAdvisor`
 - **Thymeleaf SSR frontend** — vanilla JS + Bootstrap 5.3, no SPA framework
 - **Spring Modulith** package modules with `allowedDependencies` (same pattern as `med-expert-match-ce`)
@@ -137,11 +206,20 @@ Session memory uses the same pattern as `med-expert-match-ce`:
 
 ### Advisor chain (per request)
 
+When MCP is enabled (`ai-chat.features.mcp-client: true`):
+
 1. `DateTimeContextAdvisor` — injects current date/time
-2. `MCPToolAdvisor` — provides MCP tool definitions to the LLM
-3. `ToolCallingAdvisor` — enables tool calling with conversation history disabled
-4. `SessionMemoryAdvisor` — injects compacted conversation history
+2. `MCPToolAdvisor` — injects MCP tool catalog + registers `ToolCallback` wrappers (skipped if no servers reachable)
+3. `ToolCallingAdvisor` — executes tool calls via `functiongemma` (`conversationHistoryEnabled: false`)
+4. `SessionMemoryAdvisor` — injects compacted conversation history for `sessionId = {userId}-{chatId}`
 5. `SimpleLoggerAdvisor` — request/response logging
+
+Per-turn context params (same as reference `SessionAdvisorSupport`):
+
+- `SessionMemoryAdvisor.SESSION_ID_CONTEXT_KEY` → `{userId}-{chatId}`
+- `SessionMemoryAdvisor.EVENT_FILTER_CONTEXT_KEY` → orchestrator branch filter
+
+When MCP is disabled or no servers are reachable, step 2 is skipped (chain collapses to 4 advisors).
 
 ---
 
@@ -178,20 +256,46 @@ spring:
             #   url: http://localhost:8093/sse
 ```
 
-### MCP tool discovery flow
+### MCP server discovery flow (startup)
 
-1. On startup, `McpSyncClient` initializes SSE connection to each configured MCP server
-2. Client calls `initialize()` → receives server capabilities (tools, resources, prompts)
-3. Client calls `listTools()` → receives tool definitions (name, description, input schema)
-4. Tools are wrapped as Spring AI `ToolCallback` instances and registered in the application context
-5. `MCPToolAdvisor` provides available tool definitions to the LLM on each request
-6. LLM decides which tools to call; `ToolCallingAdvisor` executes them via `McpSyncClient`
+1. Read `spring.ai.mcp.client.sse.connections` map (connection name → URL + capability flags)
+2. For each connection, create `McpSyncClient` via `HttpClientSseClientTransport` (`GET /sse`, `POST /mcp/message`)
+3. Call `initialize()` → store server name, version, capabilities
+4. Call `listTools()`, `listResources()`, `listPrompts()` per capability flags
+5. Register results in `McpServerRegistry` (in-memory catalog with health status per server)
+6. Wrap tools as `McpToolCallbackWrapper` → Spring AI `ToolCallback` (prefixed `[MCP:{serverName}]`)
+7. Expose registry via actuator health (`McpConnectionHealthIndicator`)
 
-### Required MCP server: `medical-mcp-server`
+### MCP tool selection flow (per turn)
 
-After core chat functionality is implemented, the application **must** connect to the `medical-mcp-server` at `/home/berdachuk/projects-ai-architect/ai-architect-6-mcp` (port `8092`).
+1. `MCPToolAdvisor` reads `McpServerRegistry.getReachableServers()` — only UP servers
+2. Builds system-text catalog: server name, tool name, description, input schema summary
+3. Attaches all reachable tool callbacks to the prompt
+4. Primary model (`gemma4:31b-cloud`) reasons over user message + session memory + tool catalog
+5. `ToolCallingAdvisor` delegates actual tool invocation to `functiongemma:270m`
+6. Tool results flow back into the chat model context; `ChatStreamActivityPublisher` emits `activity/tool_call` SSE events
+7. Final response streams as `token` events
 
-**Available tools from `medical-mcp-server`:**
+**Server selection rule:** all configured and reachable MCP servers are offered to the LLM. The model selects tools by name/description relevance — no hard-coded routing table. Optional future enhancement: keyword-based server pre-filtering before advisor injection.
+
+### Graceful degradation (required)
+
+**Invariant:** users can always send messages and receive streamed LLM responses regardless of MCP availability.
+
+| Condition | Behavior |
+|---|---|
+| MCP server unreachable at startup | Log warning; mark server DOWN in registry; **application starts**; chat works without tools |
+| MCP server fails mid-session | Tool call returns error to LLM; activity panel shows failure; turn continues with LLM-only response |
+| No MCP servers configured | `MCPToolAdvisor` is no-op; standard chat without enrichment |
+| All configured servers DOWN | Same as above — LLM answers from session memory only |
+| `ai-chat.features.mcp-client: false` | Skip MCP client beans entirely; chat unchanged |
+| Ollama available, MCP not | Normal chat operation (only external hard dependency is LLM + DB) |
+
+### Required MCP integration: `ai-architect-6-mcp` (phase 2)
+
+Phase 2 deliverable: connect to [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) (`medical-mcp-server`, port `8092`) **when available**. This is a feature milestone, not a runtime hard dependency — chat must work without it.
+
+**Available tools from ai-architect-6-mcp (`medical-mcp-server`):**
 
 | Tool | Description |
 |---|---|
@@ -214,22 +318,27 @@ The Harness is a structured workflow engine (ported from `med-expert-match-ce`) 
 
 ### Harness workflow states
 
-```
+Same state machine as med-expert-match-ce `DoctorMatchWorkflowState`:
+
+```text
 TASK_CREATED → PLANNING → CONTEXT_BUILT → TOOLS_EXECUTED → VERIFYING → POLICY_GATE → DONE
                                                                                     ↘ NEEDS_HUMAN
                                                                                     ↘ FAILED
 ```
 
-### Harness components
+Each transition emits `pipeline_stage` SSE. Tool calls and LLM invocations emit `activity` SSE via `ChatStreamActivityPublisher`.
 
-| Component | Role |
-|---|---|
-| `ChatWorkflowEngine` | Orchestrates chat workflows: planning → context building → tool execution → verification → response |
-| `AgentPlannerService` | Builds execution plans (steps + acceptance criteria) |
-| `AgentResponseVerifier` | Verifies tool outputs against expected criteria |
-| `PolicyGateService` | Reviews LLM responses for safety/quality |
-| `HarnessWorkflowRunStore` | Persists workflow run state (JDBC) |
-| `HarnessChainTraceStore` | Traces chained workflow events |
+### Harness components (new — generic, not medical)
+
+| Component | Role | Reference equivalent |
+|---|---|---|
+| `ChatWorkflowEngine` | Per-turn orchestrator: plan → context → tools → verify → policy → stream | Replaces `DoctorMatchWorkflowEngine` etc. |
+| `AgentPlannerService` | Builds step plan using `functiongemma` + structured output | Same pattern as reference `AgentPlannerService` |
+| `AgentResponseVerifier` | Checks tool outputs against plan acceptance criteria | Same pattern |
+| `PolicyGateService` | Basic safety/quality gate (non-empty response, no refusal-without-explanation) | Simplified `MedicalAgentPolicyGateService` |
+| `ChatStreamActivityPublisher` | Bridges Spring events → SSE `activity` events | **Port** from `ChatStreamActivityPublisherImpl` |
+| `HarnessWorkflowRunStore` | Persists workflow run state (JDBC) | Same pattern |
+| `HarnessChainTraceStore` | Traces chained workflow events | Same pattern |
 
 ### Harness configuration
 
@@ -244,19 +353,22 @@ ai-chat:
 
 ### Agent progress display (SSE events)
 
-The frontend receives SSE events and renders an **Agent Progress Panel** per turn:
+Ported from med-expert-match-ce `chat.js` (agent panel + collapsible summary). The frontend receives SSE events and renders an **Agent Progress Panel** per turn:
 
-| SSE Event | Frontend Display |
-|---|---|
-| `agent/agent_start` | Agent name + start timestamp |
-| `activity/tool_call` | Tool name + arguments (collapsible) |
-| `activity/reasoning` | Reasoning text (collapsible `<details>`) |
-| `activity/todo_update` | Plan step status update |
-| `activity/llm_call` | LLM invocation with token count |
-| `pipeline_stage` | Workflow stage transition |
-| `agent/agent_done` | Agent completion with summary (N steps, S seconds) |
-| `token` | Streaming response text |
-| `done` | Full response complete |
+| SSE `event:` | `activity.type` or payload | Frontend display |
+|---|---|---|
+| `agent` | `type: agent_start` | Agent name + start timestamp |
+| `agent` | `type: agent_done` | Collapse panel with step count + elapsed time |
+| `activity` | `tool_call` | `toolName` + optional arguments (`<pre>`) |
+| `activity` | `reasoning` | Collapsible `<details>` with reasoning text |
+| `activity` | `todo_update` | Plan steps with status badges |
+| `activity` | `llm_call` | Model, token counts, latency |
+| `activity` | `llm_turn_summary` | Turn rollup (total tokens, call count) |
+| `pipeline_stage` | `{stage, agent, status, timestampMs}` | Stage row with ✓/▶/✗ icon |
+| `token` | `{t: "<chunk>"}` | Append to streaming assistant bubble (Markdown) |
+| `done` | `{id, content, tokensUsed?}` | Finalize message, refresh sidebar counts |
+
+Optional (phase 1.5): parallel `EventSource` on `/api/v1/logs/stream?sessionId=` for execution log lines (reference pattern).
 
 ---
 
@@ -379,6 +491,7 @@ CREATE TABLE ai_chat.chat (
     message_count    INT          DEFAULT 0
 );
 CREATE UNIQUE INDEX idx_chat_user_default ON ai_chat.chat (user_id, is_default) WHERE is_default = TRUE;
+CREATE INDEX idx_chat_user_activity ON ai_chat.chat (user_id, last_activity_at DESC);
 
 -- Chat messages
 CREATE TABLE ai_chat.chat_message (
@@ -393,9 +506,12 @@ CREATE TABLE ai_chat.chat_message (
     deleted_at      TIMESTAMPTZ
 );
 CREATE UNIQUE INDEX idx_chat_message_seq ON ai_chat.chat_message (chat_id, sequence_number);
+CREATE INDEX idx_chat_message_chat ON ai_chat.chat_message (chat_id, created_at);
 
 -- Spring AI Session JDBC tables (managed by spring-ai-starter-session-jdbc)
 -- ai_session, ai_session_event — auto-created by Spring AI
+
+-- Harness workflow tables — see V2__harness_schema.sql (03-design.md)
 ```
 
 ### ID generation
@@ -425,12 +541,12 @@ src/main/java/com/example/aichat/
 
 ### Module dependency graph
 
-```
+```text
 web     → core, chat, llm
 chat    → core
 llm     → core, chat, mcp
 mcp     → core
-system  → core
+system  → core, mcp
 ```
 
 ### Interface / implementation rules
@@ -586,24 +702,36 @@ ai-chat:
 | `TOOL_CALLING_BASE_URL` | `http://localhost:11434/v1` | Tool-calling model endpoint |
 | `TOOL_CALLING_API_KEY` | `none` | API key for tool-calling model |
 | `TOOL_CALLING_MODEL` | `functiongemma:270m` | Tool-calling model name |
-| `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | Medical MCP server SSE endpoint |
+| `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (`medical-dataset` connection) |
 | `SERVER_PORT` | `8080` | Application port |
 
 ---
 
 ## 14. Milestones
 
-| # | Milestone | Key deliverables | Status |
-|---|---|---|---|
-| M1 | Schema + modulith foundation | `V1__init_chat_schema.sql`, domain records, `package-info.java` per module, Boot stub | ⬜ |
-| M2 | Chat session CRUD | `ChatRepository` + impl, `ChatService` + impl, `ChatController` REST endpoints | ⬜ |
-| M3 | LLM integration | `SpringAIConfig`, `OpenAiChatModelFactory`, `ChatAssistantService` + impl, streaming SSE | ⬜ |
-| M4 | Session memory | Spring AI Session JDBC, `SessionMemoryAdvisor`, compaction, `DateTimeContextAdvisor` | ⬜ |
-| M5 | Harness engine | `ChatWorkflowEngine`, `AgentPlannerService`, `AgentResponseVerifier`, `PolicyGateService` | ⬜ |
-| M6 | Frontend (Thymeleaf SSR) | `chat.html`, `chat.js`, agent progress panel, sidebar, composer | ⬜ |
-| M7 | MCP client integration | `McpSyncClient` config, tool discovery, `MCPToolAdvisor`, tool wrappers | ⬜ |
-| M8 | Medical MCP server connection | Connect to `medical-mcp-server` (:8092), test all 5 tools in chat flow | ⬜ |
-| M9 | Docker + polish | `docker-compose.yml`, `Dockerfile`, full integration test | ⬜ |
+### Phase 1 — Core chat (no MCP required)
+
+| # | Milestone | Key deliverables | Acceptance criteria | Status |
+|---|---|---|---|---|
+| M1 | Schema + modulith foundation | `V1__init_chat_schema.sql`, domain records, `package-info.java`, Boot stub, `ModulithArchitectureTest` | `mvn test` passes; schema migrates | ⬜ |
+| M2 | Chat session CRUD | `ChatRepository`, `ChatService`, `ChatController` REST | Create/list/rename/delete/history; default chat auto-created | ⬜ |
+| M3 | LLM integration | `SpringAIConfig`, `OpenAiChatModelFactory`, `ChatAssistantService`, SSE `token`/`done` | Stream response from `gemma4:31b-cloud` via Ollama; **works with MCP disabled** | ⬜ |
+| M4 | Session memory | Session JDBC, compaction, `SessionMemoryAdvisor`, `DateTimeContextAdvisor` | 20+ turn dialog retains context; compaction fires at threshold | ⬜ |
+| M5 | Harness engine | `ChatWorkflowEngine`, planner/verifier/policy, `ChatStreamActivityPublisher` | Agent panel shows `pipeline_stage` + `activity` events | ⬜ |
+| M6 | Frontend | `chat.html`, `chat.js`, sidebar, composer, agent panel | Full chat UX in browser; session switch/delete works | ⬜ |
+
+### Phase 2 — MCP enrichment
+
+| # | Milestone | Key deliverables | Acceptance criteria | Status |
+|---|---|---|---|---|
+| M7 | MCP client | `McpClientConfig`, `McpServerRegistry`, `MCPToolAdvisor`, tool wrappers | WireMock test passes; **app boots when MCP URL is down**; health reports DOWN | ⬜ |
+| M8 | ai-architect-6-mcp | Connect to `:8092/sse`; all 5 tools callable in chat | "List specialties" → `list_specialties`; "search cardiovascular" → `search_cases` | ⬜ |
+
+### Phase 3 — Packaging
+
+| # | Milestone | Key deliverables | Acceptance criteria | Status |
+|---|---|---|---|---|
+| M9 | Docker + polish | `docker-compose.yml`, `Dockerfile`, integration tests, smoke checklist | `docker compose up` healthy; manual smoke checklist complete | ⬜ |
 
 ---
 
@@ -622,6 +750,9 @@ services:
       CHAT_BASE_URL: http://host.docker.internal:11434/v1
       CHAT_API_KEY: none
       CHAT_MODEL: gemma4:31b-cloud
+      CHAT_ALT_BASE_URL: http://host.docker.internal:11434/v1
+      CHAT_ALT_API_KEY: none
+      CHAT_ALT_MODEL: gemma4:12b
       TOOL_CALLING_BASE_URL: http://host.docker.internal:11434/v1
       TOOL_CALLING_API_KEY: none
       TOOL_CALLING_MODEL: functiongemma:270m
@@ -646,7 +777,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ai_chat"]
+      test: ["CMD-SHELL", "pg_isready -U ai_chat -d ai_chat"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -661,7 +792,8 @@ Ollama runs on the host (`host.docker.internal:11434`), not in Docker.
 
 ## Related documentation
 
-- [README.md](README.md) — documentation index
+- [README.md](README.md) — documentation index and naming
+- [../README.md](../README.md) — project overview
 - [02-architecture.md](02-architecture.md) — system design, Modulith layout, stack
 - [03-design.md](03-design.md) — detailed design and class sketches
 - [04-testing.md](04-testing.md) — test strategy

@@ -340,70 +340,50 @@ public class ChatAssistantServiceImpl implements ChatAssistantService {
     private final ChatClient chatClient;           // primary chat model
     private final ChatClient toolCallingClient;     // tool-calling model
     private final SessionService sessionService;    // Spring AI Session JDBC
-    private final McpToolProvider mcpToolProvider;  // MCP tool definitions
-    private final ChatWorkflowEngine harnessEngine; // optional harness
+    private final McpServerRegistry mcpServerRegistry;
+    private final ChatWorkflowEngine harnessEngine;
+    private final ChatStreamActivityPublisher activityPublisher;
     private final List<Advisor> advisorChain;
 
     @Override
     public SseEmitter streamMessage(String userId, String chatId, String userMessage) {
-        SseEmitter emitter = new SseEmitter(120_000L); // 120s timeout
-
-        Chat chat = chatService.requireOwnedChat(userId, chatId);
-
-        // 1. Persist user message
-        chatService.appendUserMessage(chatId, userMessage);
-
-        // 2. Update session memory
+        SseEmitter emitter = new SseEmitter(120_000L);
         String sessionId = userId + "-" + chatId;
+
+        activityPublisher.register(sessionId, emitter);
+        emitter.onCompletion(() -> activityPublisher.unregister(sessionId));
+        emitter.onTimeout(() -> activityPublisher.unregister(sessionId));
+
+        chatService.appendUserMessage(chatId, userMessage);
         sessionService.appendUserMessage(sessionId, userMessage);
 
-        // 3. Build prompt with advisors
-        Prompt prompt = new Prompt(
-            new UserMessage(userMessage),
-            advisorChain.toArray(new Advisor[0])
-        );
+        sendSseEvent(emitter, "agent", Map.of("type", "agent_start", "agentId", "chat-orchestrator"));
 
-        // 4. Stream response
-        Flux<ChatResponse> flux = chatClient.prompt(prompt).stream().chatResponse();
+        harnessEngine.execute(sessionId, userMessage, emitter);  // pipeline_stage events
+
+        Flux<ChatResponse> flux = chatClient.prompt()
+            .user(userMessage)
+            .advisors(a -> a.param(SessionMemoryAdvisor.SESSION_ID_CONTEXT_KEY, sessionId))
+            .stream()
+            .chatResponse();
 
         StringBuilder fullResponse = new StringBuilder();
-        List<Map<String, Object>> activityLog = new ArrayList<>();
 
         flux.subscribe(
             response -> {
-                // Emit token
                 String token = response.getResult().getOutput().getText();
                 fullResponse.append(token);
-                sendSseEvent(emitter, "token", token);
-
-                // Emit activity events from metadata
-                Map<String, Object> metadata = response.getMetadata();
-                if (metadata.containsKey("tool_calls")) {
-                    sendSseEvent(emitter, "activity", Map.of(
-                        "type", "tool_call",
-                        "name", metadata.get("tool_name"),
-                        "arguments", metadata.get("tool_arguments")
-                    ));
-                }
+                sendSseEvent(emitter, "token", Map.of("t", token));
             },
-            error -> {
-                emitter.completeWithError(error);
-            },
+            error -> emitter.completeWithError(error),
             () -> {
-                // 5. Persist assistant message
                 String content = fullResponse.toString();
-                int tokens = estimateTokens(content);
-                chatService.appendAssistantMessage(chatId, content, tokens,
-                    Map.of("activityLog", activityLog));
-
-                // 6. Update session memory
+                ChatMessage assistant = chatService.appendAssistantMessage(
+                    chatId, content, estimateTokens(content), Map.of());
                 sessionService.appendAssistantMessage(sessionId, content);
 
-                // 7. Signal completion
-                sendSseEvent(emitter, "done", Map.of(
-                    "messageId", "...",
-                    "tokensUsed", tokens
-                ));
+                sendSseEvent(emitter, "agent", Map.of("type", "agent_done", "agentId", "chat-orchestrator"));
+                sendSseEvent(emitter, "done", Map.of("id", assistant.id(), "content", content));
                 emitter.complete();
             }
         );
@@ -539,6 +519,7 @@ public class AdvisorChainConfig {
 
     @Bean
     DateTimeContextAdvisor dateTimeAdvisor() {
+        // Class: core/advisor/DateTimeContextAdvisor.java (ported from med-expert-match-ce)
         return DateTimeContextAdvisor.builder()
             .dateTimeFormat("yyyy-MM-dd HH:mm:ss z")
             .build();
@@ -558,6 +539,79 @@ public class AdvisorChainConfig {
             .build();
     }
 }
+```
+
+---
+
+## ChatStreamActivityPublisher (`llm/service`)
+
+Ported from med-expert-match-ce `ChatStreamActivityPublisherImpl`. Bridges Spring application events to SSE `activity` events for the active chat turn.
+
+```java
+// llm/service/ChatStreamActivityPublisher.java
+public interface ChatStreamActivityPublisher {
+    void register(String sessionId, SseEmitter emitter);
+    void unregister(String sessionId);
+    void publishReasoning(String sessionId, String message);
+    void publishTurnSummary(String sessionId, LlmUsageSessionRollup rollup);
+}
+
+// llm/service/impl/ChatStreamActivityPublisherImpl.java
+@Service
+public class ChatStreamActivityPublisherImpl implements ChatStreamActivityPublisher {
+    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+
+    @EventListener void onToolCallLogged(ToolCallLoggedEvent e) { ... }
+    @EventListener void onLlmCallCompleted(LlmCallCompletedEvent e) { ... }
+    @EventListener void onTodoUpdate(AgentTodoUpdateEvent e) { ... }
+
+    private void publish(String sessionId, String type, Map<String, Object> fields) {
+        // emitter.send(SseEmitter.event().name("activity").data(payload with type field))
+    }
+}
+```
+
+---
+
+## MCP Server Registry (`mcp/registry`)
+
+```java
+// mcp/registry/McpServerRegistry.java
+public class McpServerRegistry {
+    private final Map<String, McpServerInfo> servers = new ConcurrentHashMap<>();
+
+    public void register(String connectionName, McpServerInfo info) { ... }
+    public void markDown(String connectionName, String reason) { ... }
+
+    public List<McpServerInfo> getReachableServers() {
+        return servers.values().stream()
+            .filter(s -> s.status() == ServerStatus.UP)
+            .toList();
+    }
+
+    public List<ToolCallback> getAllToolCallbacks() {
+        List<ToolCallback> callbacks = new ArrayList<>();
+        getReachableServers().forEach(info ->
+            info.tools().forEach(tool ->
+                callbacks.add(new McpToolCallbackWrapper(
+                    info.connectionName(), info.client(), tool))));
+        return callbacks;
+    }
+
+    public String getToolCatalogText() { /* markdown catalog for MCPToolAdvisor */ }
+}
+
+public record McpServerInfo(
+    String connectionName,
+    McpSyncClient client,
+    String serverName,
+    String version,
+    String url,
+    ServerStatus status,
+    List<ToolDefinition> tools,
+    List<ResourceDefinition> resources,
+    List<PromptDefinition> prompts
+) {}
 ```
 
 ---
@@ -593,10 +647,26 @@ public class McpClientConfig {
     }
 
     @Bean
-    McpToolProvider mcpToolProvider(Map<String, McpSyncClient> mcpClients) {
-        return new McpToolProvider(mcpClients);
+    McpServerRegistry mcpServerRegistry() {
+        return new McpServerRegistry();
     }
 }
+```
+
+`McpClientConfig` populates the registry on startup. **Per-connection failures are caught** — a unreachable server is marked DOWN; the application context still starts.
+
+```java
+// mcp/config/McpClientConfig.java — startup must not fail when MCP is unavailable
+props.getConnections().forEach((name, conn) -> {
+    try {
+        McpSyncClient client = McpSyncClient.using(/* ... */);
+        client.initialize();
+        registry.register(name, buildInfo(client, conn));
+    } catch (Exception e) {
+        log.warn("MCP connection '{}' unavailable: {}", name, e.getMessage());
+        registry.markDown(name, e.getMessage());
+    }
+});
 ```
 
 ### McpClientProperties
@@ -613,48 +683,6 @@ public record McpClientProperties(
         boolean resources,
         boolean prompts
     ) {}
-}
-```
-
-### McpToolProvider
-
-```java
-// mcp/tool/McpToolProvider.java
-public class McpToolProvider {
-    private final Map<String, McpSyncClient> clients;
-
-    public McpToolProvider(Map<String, McpSyncClient> clients) {
-        this.clients = clients;
-    }
-
-    /**
-     * Returns all MCP tool definitions as Spring AI ToolCallback instances.
-     * Called by MCPToolAdvisor to provide tool context to the LLM.
-     */
-    public List<ToolCallback> getAllToolCallbacks() {
-        List<ToolCallback> callbacks = new ArrayList<>();
-        clients.forEach((serverName, client) -> {
-            client.listTools().forEach(tool -> {
-                callbacks.add(new McpToolCallbackWrapper(serverName, client, tool));
-            });
-        });
-        return callbacks;
-    }
-
-    /**
-     * Returns tool definitions for the LLM system prompt.
-     */
-    public String getToolDefinitionsText() {
-        StringBuilder sb = new StringBuilder();
-        clients.forEach((serverName, client) -> {
-            sb.append("## MCP Server: ").append(serverName).append("\n");
-            client.listTools().forEach(tool -> {
-                sb.append("- **").append(tool.name()).append("**: ")
-                  .append(tool.description()).append("\n");
-            });
-        });
-        return sb.toString();
-    }
 }
 ```
 
@@ -696,30 +724,57 @@ public class McpToolCallbackWrapper implements ToolCallback {
 // llm/advisor/MCPToolAdvisor.java
 public class MCPToolAdvisor implements Advisor {
 
-    private final McpToolProvider toolProvider;
+    private final McpServerRegistry registry;
 
-    public MCPToolAdvisor(McpToolProvider toolProvider) {
-        this.toolProvider = toolProvider;
+    public MCPToolAdvisor(McpServerRegistry registry) {
+        this.registry = registry;
     }
 
     @Override
     public AdvisedRequest advise(AdvisedRequest request, Map<String, Object> context) {
-        // Inject MCP tool definitions into system text
-        String toolDefs = toolProvider.getToolDefinitionsText();
+        if (registry.getReachableServers().isEmpty()) {
+            return request;
+        }
+        String toolDefs = registry.getToolCatalogText();
         String enhancedSystemText = request.systemText() + "\n\n" +
             "Available MCP tools:\n" + toolDefs;
 
         return AdvisedRequest.from(request)
             .systemText(enhancedSystemText)
-            .toolCallbacks(toolProvider.getAllToolCallbacks())
+            .toolCallbacks(registry.getAllToolCallbacks())
             .build();
     }
 
     @Override
     public int getOrder() {
-        return 1; // After DateTimeContextAdvisor (0), before ToolCallingAdvisor (2)
+        return 10; // After DateTimeContextAdvisor (HIGHEST_PRECEDENCE), before ToolCallingAdvisor
     }
 }
+```
+
+---
+
+## Harness persistence (`V2__harness_schema.sql`)
+
+Harness run state is persisted in a second Flyway migration (M5):
+
+```sql
+CREATE TABLE ai_chat.harness_workflow_run (
+    run_id       CHAR(24)    PRIMARY KEY,
+    session_id   VARCHAR(512) NOT NULL,
+    state        VARCHAR(50)  NOT NULL,
+    plan_json    JSONB,
+    created_at   TIMESTAMPTZ  DEFAULT now(),
+    updated_at   TIMESTAMPTZ  DEFAULT now()
+);
+
+CREATE TABLE ai_chat.harness_chain_trace (
+    id           CHAR(24)    PRIMARY KEY,
+    run_id       CHAR(24)    NOT NULL REFERENCES ai_chat.harness_workflow_run(run_id) ON DELETE CASCADE,
+    event_type   VARCHAR(50) NOT NULL,
+    payload      JSONB,
+    created_at   TIMESTAMPTZ  DEFAULT now()
+);
 ```
 
 ---
@@ -1228,7 +1283,7 @@ public class ChatWebController {
             const payload = JSON.parse(data);
             switch (eventType) {
                 case 'token':
-                    appendToken(payload);
+                    appendToken(payload.t ?? payload);
                     break;
                 case 'activity':
                     addAgentActivity(payload);
@@ -1252,7 +1307,7 @@ public class ChatWebController {
     }
 
     function appendToken(text) {
-        if (!currentAssistantMessage) return;
+        if (!currentAssistantMessage || text == null) return;
         const contentEl = currentAssistantMessage.querySelector('.message-content');
         contentEl.textContent += text;
         // Re-render markdown
@@ -1271,7 +1326,7 @@ public class ChatWebController {
         switch (activity.type) {
             case 'tool_call':
                 icon = '🔧';
-                entry.innerHTML = `${icon} Tool: <strong>${activity.name}</strong>`;
+                entry.innerHTML = `${icon} Tool: <strong>${activity.toolName || activity.name}</strong>`;
                 if (activity.arguments) {
                     const argsPre = document.createElement('pre');
                     argsPre.className = 'activity-detail';
@@ -1460,7 +1515,7 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/chat/**", "/css/**", "/js/**",
-                    "/api/v1/**", "/actuator/health").permitAll()
+                    "/api/v1/**", "/actuator/health", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -1523,6 +1578,8 @@ AgentPlanOutput plan = chatClient.prompt()
 
 ## Related documentation
 
+- [README.md](README.md) — documentation index and naming
+- [../README.md](../README.md) — project overview
 - [01-requirements.md](01-requirements.md) — SRS with goals, MCP surface, milestones
 - [02-architecture.md](02-architecture.md) — system diagram, Modulith modules, stack
 - [04-testing.md](04-testing.md) — test strategy

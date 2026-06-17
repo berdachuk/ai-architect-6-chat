@@ -325,8 +325,12 @@ curl http://localhost:11434/v1/models
 
 - JDK 21
 - Maven 3.9+
-- Docker (for PostgreSQL)
-- Ollama with `gemma4:31b-cloud`, `gemma4:12b`, and `functiongemma:270m` pulled
+- Docker (PostgreSQL local dev + **Testcontainers** for IT, DEC-009)
+- Ollama with `gemma4:31b-cloud`, `gemma4:12b`, and `functiongemma:270m` pulled (M3+)
+
+### Windows development (DEC-008)
+
+Use **WSL 2** for Docker. Clone the repo in WSL and run `mvn`, `docker`, and `mvn verify -Pintegration` from the WSL shell.
 
 ### Start PostgreSQL
 

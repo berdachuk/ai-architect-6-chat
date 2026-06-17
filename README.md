@@ -6,7 +6,7 @@ General-purpose AI chat with multi-session history, long-dialog memory, optional
 
 Built on the chat patterns from [med-expert-match-ce](https://github.com/berdachuk/med-expert-match-ce) — without graph databases, medical domain logic, or evaluation frameworks. Connects to [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) for MCP tool enrichment (phase 2).
 
-**Version:** 1.0.0 (documentation) · **Status:** `develop` — requirements and design complete; application code not yet implemented
+**Version:** 1.0.0-SNAPSHOT · **Status:** `develop` — M1 complete; M2 in progress
 
 ---
 
@@ -137,21 +137,18 @@ Track progress: [docs/01-requirements.md §14](docs/01-requirements.md#14-milest
 
 ---
 
-## Quick start (planned)
+## Quick start
 
-> Application code is not implemented yet. This is the target local setup from [docs/05-deployment.md](docs/05-deployment.md).
-
-**Prerequisites:** JDK 21, Maven 3.9+, Docker, Ollama with models above.
+**Prerequisites:** JDK 21, Maven 3.9+, Docker (WSL 2 on Windows per DEC-008), Ollama for M3+.
 
 ```bash
-# PostgreSQL
-docker run -d --name ai-chat-postgres \
-  -e POSTGRES_DB=ai_chat \
-  -e POSTGRES_USER=ai_chat \
-  -e POSTGRES_PASSWORD=ai_chat \
-  -p 5432:5432 postgres:17
+mvn test                      # unit + Modulith (M1+)
+mvn verify -Pintegration        # + Testcontainers Flyway IT (DEC-009)
 
-# Run app (once implemented)
+# Local run (needs PostgreSQL)
+docker run -d --name ai-chat-postgres \
+  -e POSTGRES_DB=ai_chat -e POSTGRES_USER=ai_chat -e POSTGRES_PASSWORD=ai_chat \
+  -p 5432:5432 postgres:17
 mvn spring-boot:run
 ```
 

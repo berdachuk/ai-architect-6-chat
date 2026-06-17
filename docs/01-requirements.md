@@ -752,7 +752,7 @@ ai-chat:
 
 | # | Milestone | Key deliverables | Acceptance criteria | Status |
 |---|---|---|---|---|
-| M1 | Schema + modulith foundation | `V1__init_chat_schema.sql`, domain records, `package-info.java`, Boot stub, `ModulithArchitectureTest` | `mvn test` passes; schema migrates | ⬜ |
+| M1 | Schema + modulith foundation | `V1__init_chat_schema.sql`, domain records, `package-info.java`, Boot stub, `ModulithArchitectureTest` | `mvn test` passes; schema migrates | ✅ |
 | M2 | Chat session CRUD | `ChatRepository`, `ChatService`, `ChatController` REST | Create/list/rename/delete/history; default chat auto-created | ⬜ |
 | M3 | LLM integration | `SpringAIConfig`, `OpenAiChatModelFactory`, `ChatAssistantService`, SSE `token`/`done` | Stream response from `gemma4:31b-cloud` via Ollama; **works with MCP disabled** | ⬜ |
 | M4 | Session memory | Session JDBC, compaction, `SessionMemoryAdvisor`, `DateTimeContextAdvisor` | 20+ turn dialog retains context; compaction fires at threshold | ⬜ |

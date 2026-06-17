@@ -52,7 +52,8 @@ Planned: Cucumber IT per [docs/04-testing.md](../../docs/04-testing.md). **No `.
 
 ## Gaps
 
-- No `pom.xml` or Java sources (except `AGENTS.md` stubs)
+- M2+ implementation in progress (see `.agents/plans/M-03-m2-chat-crud-openapi.md`)
 - Harness tables in `V2__harness_schema.sql` — documented, not migrated
+- `pom.xml` on Boot 3.4.4 / Modulith 1.3.4 (DEC-010); docs target 4.1 / 2.1
 
 Canonical: [docs/02-architecture.md](../../docs/02-architecture.md)

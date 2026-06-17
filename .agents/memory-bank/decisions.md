@@ -56,3 +56,42 @@
 | Modules | all |
 | Rationale | Align with `com.berdachuk.medexpertmatch`; organization namespace `com.berdachuk` |
 | Consequence | All Java sources under `com.berdachuk.aichat.*`; no `com.example` placeholders |
+
+## DEC-007 — OpenAPI REST contract + generated clients
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Date | 2026-06-17 |
+| Modules | `chat`, `web`, tests |
+| Rationale | Single canonical API contract; avoid drift between docs, tests, and UI |
+| Consequence | springdoc publishes spec; IT and `chat.js` CRUD use OpenAPI Generator clients from JSON/YAML |
+
+## DEC-008 — WSL for Docker on Windows (development)
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Date | 2026-06-17 |
+| Scope | Local development on Windows |
+| Rationale | Docker + Testcontainers reliability on WSL 2 |
+| Consequence | Run Maven/Docker from WSL; see [docs/05-deployment.md](../../docs/05-deployment.md) |
+
+## DEC-009 — Testcontainers for integration tests
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Date | 2026-06-17 |
+| Modules | tests |
+| Rationale | Isolated, reproducible IT |
+| Consequence | `FlywaySchemaIntegrationTest` and future IT use `postgres:17` Testcontainers; `mvn verify -Pintegration` |
+
+## DEC-010 — M1 stack versions (pragmatic)
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Date | 2026-06-17 |
+| Rationale | Spring Boot 4.1 / Modulith 2.1 BOM not used in first build; 3.4.4 + Modulith 1.3.4 compiles and passes tests |
+| Consequence | Upgrade `pom.xml` to doc target versions (Boot 4.1, Modulith 2.1, Spring AI 2.0) in M2–M3 without structural changes |

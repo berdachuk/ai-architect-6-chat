@@ -5,7 +5,7 @@
 | Layer | Choice |
 |---|---|
 | Language | Java 21 |
-| Framework | Spring Boot 4.1.0, Spring AI 2.0.0, Spring Modulith 2.1.0 |
+| Framework | Spring Boot 3.4.4 (target 4.1 per docs, DEC-010), Spring Modulith 1.3.4 (target 2.1) |
 | DB | PostgreSQL 17, Flyway, JDBC only |
 | UI | Thymeleaf 3, Bootstrap 5.3, vanilla JS |
 | LLM client | `spring-ai-starter-model-openai` → `OpenAiChatModel` |

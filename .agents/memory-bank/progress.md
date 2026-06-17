@@ -2,18 +2,19 @@
 
 ## 2026-06-17 — Documentation baseline
 
-- Added full `docs/` set (01-requirements through 05-deployment, docs README)
-- Root README; OpenAI-compatible client + default Ollama requirements
-- MCP optional-at-runtime invariant documented
-- Commits on `develop`: docs complete + OpenAI client requirement
-- **Modules:** docs only
-- **Tests:** none (no code)
+- Full `docs/` set; OpenAI-compatible client + default Ollama
+- Commits on `develop`
 
 ## 2026-06-17 — AI context bootstrap
 
-- Created `AGENTS.md` (root), module `AGENTS.md` (chat, llm, mcp, web)
-- Created `.agents/skills/` (7 skills), `.agents/memory-bank/`, `.agents/plans/`
-- Created `docs/ai-context-strategy.md`
-- Base package `com.berdachuk.aichat` (DEC-006); aligned docs and agent context
-- **Traceability:** milestone-based (M1–M9); REQ IDs provisional
-- **Plan M-01:** completed, archived to `.agents/plans/archive/`
+- `AGENTS.md`, `.agents/skills/`, memory bank, `docs/ai-context-strategy.md`
+- Base package `com.berdachuk.aichat` (DEC-006)
+
+## 2026-06-17 — M1 Modulith foundation
+
+- `pom.xml`, `AiChatApplication`, Flyway `V1__init_chat_schema.sql`
+- Domain `Chat`, `ChatMessage`; `IdGenerator`; six module `package-info.java`
+- Tests: `ModulithArchitectureTest`, `IdGeneratorTest`, `FlywaySchemaIntegrationTest`
+- **Commands:** `mvn test`, `mvn verify -Pintegration` — pass
+- **Plan:** M-02 archived; M-03 active for M2
+- **Stack note:** Boot 3.4.4 / Modulith 1.3.4 (DEC-010)

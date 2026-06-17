@@ -4,6 +4,8 @@ import com.berdachuk.aichat.chat.domain.Chat;
 import com.berdachuk.aichat.chat.domain.ChatMessage;
 import com.berdachuk.aichat.chat.rest.dto.CreateChatRequest;
 import com.berdachuk.aichat.chat.rest.dto.RenameChatRequest;
+import com.berdachuk.aichat.chat.rest.dto.ChatMcpSelectionView;
+import com.berdachuk.aichat.chat.rest.dto.UpdateChatMcpRequest;
 import com.berdachuk.aichat.chat.service.ChatService;
 import com.berdachuk.aichat.core.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,5 +72,21 @@ public class ChatController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void renameChat(@PathVariable String chatId, @RequestBody RenameChatRequest request) {
         chatService.renameChat(userContext.getUserId(), chatId, request.name());
+    }
+
+    @Operation(summary = "Get MCP connections enabled for this chat")
+    @GetMapping("/{chatId}/mcp")
+    ChatMcpSelectionView getChatMcpSelection(@PathVariable String chatId) {
+        return new ChatMcpSelectionView(chatService.getEnabledMcpConnections(userContext.getUserId(), chatId));
+    }
+
+    @Operation(summary = "Update MCP connections enabled for this chat")
+    @PutMapping("/{chatId}/mcp")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void updateChatMcpSelection(@PathVariable String chatId, @RequestBody UpdateChatMcpRequest request) {
+        chatService.updateEnabledMcpConnections(
+                userContext.getUserId(),
+                chatId,
+                request != null ? request.connectionIds() : List.of());
     }
 }

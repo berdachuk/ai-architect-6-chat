@@ -44,7 +44,8 @@ public class ChatServiceImpl implements ChatService {
                 now,
                 now,
                 now,
-                0);
+                0,
+                List.of());
         return chatRepository.insert(chat);
     }
 
@@ -125,5 +126,17 @@ public class ChatServiceImpl implements ChatService {
         chatRepository.findById(chatId)
                 .orElseThrow(() -> new ChatNotFoundException(chatId));
         chatRepository.updateAgentId(chatId, agentId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getEnabledMcpConnections(String userId, String chatId) {
+        return requireOwnedChat(userId, chatId).enabledMcpConnections();
+    }
+
+    @Override
+    public void updateEnabledMcpConnections(String userId, String chatId, List<String> connectionIds) {
+        requireOwnedChat(userId, chatId);
+        chatRepository.updateEnabledMcpConnections(chatId, connectionIds == null ? List.of() : List.copyOf(connectionIds));
     }
 }

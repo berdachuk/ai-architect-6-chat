@@ -1,7 +1,7 @@
 package com.berdachuk.aichat.chat.domain;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 
 public record Chat(
         String id,
@@ -12,5 +12,6 @@ public record Chat(
         Instant createdAt,
         Instant updatedAt,
         Instant lastActivityAt,
-        int messageCount) {
+        int messageCount,
+        List<String> enabledMcpConnections) {
 }

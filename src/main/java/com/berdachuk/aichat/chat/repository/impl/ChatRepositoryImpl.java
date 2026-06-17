@@ -6,6 +6,9 @@ import com.berdachuk.aichat.core.repository.sql.InjectSql;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,7 +21,10 @@ import java.util.Optional;
 @Repository
 public class ChatRepositoryImpl implements ChatRepository {
 
+    private static final TypeReference<List<String>> CONNECTION_IDS_TYPE = new TypeReference<>() {};
+
     private final NamedParameterJdbcTemplate jdbc;
+    private final JsonMapper jsonMapper;
 
     @InjectSql("/sql/chat/insert.sql")
     private String insertSql;
@@ -44,27 +50,31 @@ public class ChatRepositoryImpl implements ChatRepository {
     @InjectSql("/sql/chat/updateActivity.sql")
     private String updateActivitySql;
 
+    @InjectSql("/sql/chat/updateEnabledMcpConnections.sql")
+    private String updateEnabledMcpConnectionsSql;
+
     @InjectSql("/sql/chat/existsByUserId.sql")
     private String existsByUserIdSql;
 
-    public ChatRepositoryImpl(NamedParameterJdbcTemplate jdbc) {
+    public ChatRepositoryImpl(NamedParameterJdbcTemplate jdbc, JsonMapper jsonMapper) {
         this.jdbc = jdbc;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
     public Optional<Chat> findById(String id) {
-        List<Chat> results = jdbc.query(selectByIdSql, Map.of("id", id), new ChatRowMapper());
+        List<Chat> results = jdbc.query(selectByIdSql, Map.of("id", id), new ChatRowMapper(jsonMapper));
         return results.isEmpty() ? Optional.empty() : Optional.of(results.getFirst());
     }
 
     @Override
     public List<Chat> findByUserId(String userId) {
-        return jdbc.query(listByUserSql, Map.of("userId", userId), new ChatRowMapper());
+        return jdbc.query(listByUserSql, Map.of("userId", userId), new ChatRowMapper(jsonMapper));
     }
 
     @Override
     public Optional<Chat> findDefaultByUserId(String userId) {
-        List<Chat> results = jdbc.query(findDefaultByUserSql, Map.of("userId", userId), new ChatRowMapper());
+        List<Chat> results = jdbc.query(findDefaultByUserSql, Map.of("userId", userId), new ChatRowMapper(jsonMapper));
         return results.isEmpty() ? Optional.empty() : Optional.of(results.getFirst());
     }
 
@@ -79,7 +89,8 @@ public class ChatRepositoryImpl implements ChatRepository {
                 "createdAt", Timestamp.from(chat.createdAt()),
                 "updatedAt", Timestamp.from(chat.updatedAt()),
                 "lastActivityAt", Timestamp.from(chat.lastActivityAt()),
-                "messageCount", chat.messageCount()));
+                "messageCount", chat.messageCount(),
+                "enabledMcpConnections", toJson(chat.enabledMcpConnections())));
         return chat;
     }
 
@@ -102,6 +113,13 @@ public class ChatRepositoryImpl implements ChatRepository {
     }
 
     @Override
+    public void updateEnabledMcpConnections(String id, List<String> connectionIds) {
+        jdbc.update(updateEnabledMcpConnectionsSql, Map.of(
+                "id", id,
+                "enabledMcpConnections", toJson(connectionIds)));
+    }
+
+    @Override
     public void deleteById(String id) {
         jdbc.update(deleteByIdSql, Map.of("id", id));
     }
@@ -112,7 +130,21 @@ public class ChatRepositoryImpl implements ChatRepository {
         return Boolean.TRUE.equals(exists);
     }
 
+    private String toJson(List<String> connectionIds) {
+        try {
+            return jsonMapper.writeValueAsString(connectionIds == null ? List.of() : connectionIds);
+        } catch (JacksonException e) {
+            throw new IllegalArgumentException("Invalid MCP connection ids", e);
+        }
+    }
+
     private static class ChatRowMapper implements RowMapper<Chat> {
+
+        private final JsonMapper jsonMapper;
+
+        private ChatRowMapper(JsonMapper jsonMapper) {
+            this.jsonMapper = jsonMapper;
+        }
 
         @Override
         public Chat mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -125,7 +157,19 @@ public class ChatRepositoryImpl implements ChatRepository {
                     rs.getTimestamp("created_at").toInstant(),
                     rs.getTimestamp("updated_at").toInstant(),
                     rs.getTimestamp("last_activity_at").toInstant(),
-                    rs.getInt("message_count"));
+                    rs.getInt("message_count"),
+                    parseConnectionIds(rs.getString("enabled_mcp_connections"), jsonMapper));
+        }
+
+        private static List<String> parseConnectionIds(String json, JsonMapper jsonMapper) {
+            if (json == null || json.isBlank()) {
+                return List.of();
+            }
+            try {
+                return jsonMapper.readValue(json, CONNECTION_IDS_TYPE);
+            } catch (JacksonException e) {
+                throw new IllegalStateException("Failed to parse enabled MCP connections", e);
+            }
         }
     }
 }

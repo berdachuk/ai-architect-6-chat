@@ -22,6 +22,8 @@ public interface ChatRepository {
 
     void updateActivity(String id, Instant lastActivityAt, int messageCount);
 
+    void updateEnabledMcpConnections(String id, List<String> connectionIds);
+
     void deleteById(String id);
 
     boolean existsByUserId(String userId);

@@ -27,4 +27,8 @@ public interface ChatService {
     ChatMessage appendAssistantMessage(String chatId, String content, int tokensUsed, Map<String, Object> metadata);
 
     void updateAgentId(String chatId, String agentId);
+
+    List<String> getEnabledMcpConnections(String userId, String chatId);
+
+    void updateEnabledMcpConnections(String userId, String chatId, List<String> connectionIds);
 }

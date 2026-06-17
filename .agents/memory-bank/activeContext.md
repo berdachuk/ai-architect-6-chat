@@ -4,15 +4,15 @@
 
 ## Current focus
 
-**M6 complete.** Next: **M7** — MCP client per [M-08-m7-mcp-client.md](../plans/M-08-m7-mcp-client.md).
+**M7 complete.** Next: **M8** — per-chat MCP UI per [M-09-m8-per-chat-mcp-ui.md](../plans/M-09-m8-per-chat-mcp-ui.md).
 
 ## In progress
 
-- [x] M1–M6 complete
-- [ ] M7: MCP registry, connections API, MCPToolAdvisor
+- [x] M1–M7 complete
+- [ ] M8: MCP picker UI, per-chat toggles, ai-architect-6-mcp smoke
 
 ## Next steps
 
-1. `mcp_connection` schema + REST catalog
-2. `McpServerRegistry` + SSE client bootstrap
-3. `MCPToolAdvisor` wired into chat client chain
+1. Thymeleaf MCP panel + `chat.js` toggles
+2. Bootstrap `medical-dataset` connection seed
+3. IT for scoped tool injection per chat

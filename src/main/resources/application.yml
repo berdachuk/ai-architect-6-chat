@@ -19,6 +19,9 @@ spring:
     baseline-on-migrate: true
     default-schema: ai_chat
   ai:
+    mcp:
+      client:
+        enabled: false
     custom:
       chat:
         provider: ollama
@@ -57,6 +60,8 @@ server:
   port: ${SERVER_PORT:8095}
 
 ai-chat:
+  features:
+    mcp-client: true
   harness:
     max-iterations: 2
     retry-on-verify-fail: true

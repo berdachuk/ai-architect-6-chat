@@ -45,3 +45,12 @@
 - Sidebar CRUD via REST; `ChatPageIntegrationTest`
 - **Plan:** M-07 archived; M-08 active for M7 MCP client
 
+## 2026-06-17 — M7 MCP client + runtime catalog
+
+- Flyway `V4__init_mcp_schema.sql` — `mcp_connection`, `chat.enabled_mcp_connections`
+- `McpServerRegistry`, `McpClientConnector`, REST `/api/v1/mcp/connections`
+- `MCPToolAdvisor` + `ToolCallingAdvisor` in `LlmChatClientConfiguration`
+- `PUT/GET /api/v1/chats/{chatId}/mcp`; `spring-ai-starter-mcp-client` 2.0.0
+- Tests: `McpServerRegistryTest`, `MCPToolAdvisorTest`, `McpConnectionControllerIntegrationTest`, `McpClientIntegrationTest`
+- **Plan:** M-08 archived; M-09 active for M8 per-chat MCP UI
+

@@ -99,6 +99,6 @@ class ChatServiceImplTest {
 
     private static Chat sampleChat(String id, String userId, boolean isDefault) {
         Instant now = Instant.parse("2026-06-17T10:00:00Z");
-        return new Chat(id, userId, "Chat", "auto", isDefault, now, now, now, 0);
+        return new Chat(id, userId, "Chat", "auto", isDefault, now, now, now, 0, List.of());
     }
 }

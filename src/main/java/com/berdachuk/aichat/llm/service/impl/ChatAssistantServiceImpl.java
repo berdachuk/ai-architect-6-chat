@@ -2,6 +2,7 @@ package com.berdachuk.aichat.llm.service.impl;
 
 import com.berdachuk.aichat.chat.domain.ChatMessage;
 import com.berdachuk.aichat.chat.service.ChatService;
+import com.berdachuk.aichat.llm.advisor.MCPToolAdvisor;
 import com.berdachuk.aichat.llm.harness.ChatWorkflowEngine;
 import com.berdachuk.aichat.llm.harness.domain.HarnessResult;
 import com.berdachuk.aichat.llm.service.ChatAssistantService;
@@ -159,10 +160,19 @@ public class ChatAssistantServiceImpl implements ChatAssistantService {
         return userId + "-" + chatId;
     }
 
-    private static java.util.function.Consumer<ChatClient.AdvisorSpec> sessionAdvisors(String userId, String chatId) {
+    private static java.util.function.Consumer<ChatClient.AdvisorSpec> sessionAdvisors(
+            String userId, String chatId, java.util.List<String> enabledMcpConnections) {
         String sessionId = sessionId(userId, chatId);
         return spec -> spec
                 .param(SessionMemoryAdvisor.SESSION_ID_CONTEXT_KEY, sessionId)
-                .param(SessionMemoryAdvisor.USER_ID_CONTEXT_KEY, userId);
+                .param(SessionMemoryAdvisor.USER_ID_CONTEXT_KEY, userId)
+                .param(MCPToolAdvisor.ENABLED_CONNECTIONS_CONTEXT_KEY, enabledMcpConnections);
+    }
+
+    private java.util.function.Consumer<ChatClient.AdvisorSpec> sessionAdvisors(String userId, String chatId) {
+        return sessionAdvisors(
+                userId,
+                chatId,
+                chatService.getEnabledMcpConnections(userId, chatId));
     }
 }

@@ -2,6 +2,8 @@ package com.berdachuk.aichat.core.repository.sql;
 
 import com.berdachuk.aichat.chat.repository.impl.ChatRepositoryImpl;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
+
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.lang.reflect.Field;
@@ -14,7 +16,7 @@ class SqlInjectBeanPostProcessorTest {
     @Test
     void injectsSqlFromClasspathIntoAnnotatedFields() throws Exception {
         var processor = new SqlInjectBeanPostProcessor();
-        var repository = new ChatRepositoryImpl(mock(NamedParameterJdbcTemplate.class));
+        var repository = new ChatRepositoryImpl(mock(NamedParameterJdbcTemplate.class), mock(JsonMapper.class));
 
         processor.postProcessBeforeInitialization(repository, "chatRepositoryImpl");
 

@@ -120,3 +120,38 @@
     max-height: 220px;
     overflow-y: auto;
 }
+
+.mcp-connection-list {
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.mcp-connection-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.mcp-connection-item:last-child {
+    border-bottom: none;
+}
+
+.mcp-connection-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.mcp-connection-name {
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.mcp-status-up {
+    color: #198754;
+}
+
+.mcp-status-down {
+    color: #6c757d;
+}

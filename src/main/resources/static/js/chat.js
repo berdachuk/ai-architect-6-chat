@@ -5,6 +5,81 @@
 
     let currentAssistantMessage = null;
     const stageStatus = new Map();
+    let enabledMcpConnections = new Set();
+
+    async function loadMcpPanel() {
+        const listEl = document.getElementById('mcpConnectionList');
+        const statusEl = document.getElementById('mcpPanelStatus');
+        if (!listEl) {
+            return;
+        }
+
+        try {
+            const [catalogResp, selectionResp] = await Promise.all([
+                fetch('/api/v1/mcp/connections', { headers: apiHeaders(config.userId) }),
+                fetch(`/api/v1/chats/${config.chatId}/mcp`, { headers: apiHeaders(config.userId) })
+            ]);
+
+            if (!catalogResp.ok || !selectionResp.ok) {
+                listEl.textContent = 'MCP unavailable';
+                statusEl.textContent = 'off';
+                return;
+            }
+
+            const catalog = await catalogResp.json();
+            const selection = await selectionResp.json();
+            enabledMcpConnections = new Set(selection.connectionIds || []);
+            renderMcpConnections(catalog);
+
+            const upCount = catalog.filter(function (item) { return item.status === 'UP'; }).length;
+            statusEl.textContent = upCount + '/' + catalog.length + ' up';
+        } catch (error) {
+            listEl.textContent = 'Could not load MCP catalog';
+            statusEl.textContent = 'err';
+        }
+    }
+
+    function renderMcpConnections(connections) {
+        const listEl = document.getElementById('mcpConnectionList');
+        if (!connections || connections.length === 0) {
+            listEl.innerHTML = '<div class="text-muted">No MCP connections configured.</div>';
+            return;
+        }
+
+        listEl.innerHTML = connections.map(function (connection) {
+            const checked = enabledMcpConnections.has(connection.id) ? ' checked' : '';
+            const statusClass = connection.status === 'UP' ? 'mcp-status-up' : 'mcp-status-down';
+            const toolLabel = connection.toolCount > 0 ? connection.toolCount + ' tools' : 'no tools';
+            return `
+                <label class="mcp-connection-item">
+                    <input type="checkbox" class="form-check-input mt-1 mcp-toggle"
+                           data-connection-id="${connection.id}"${checked}>
+                    <span class="mcp-connection-meta">
+                        <span class="mcp-connection-name">${escapeHtml(connection.name)}</span>
+                        <div class="${statusClass}">${connection.status} · ${toolLabel}</div>
+                    </span>
+                </label>`;
+        }).join('');
+
+        listEl.querySelectorAll('.mcp-toggle').forEach(function (input) {
+            input.addEventListener('change', function () {
+                toggleMcpConnection(input.dataset.connectionId, input.checked);
+            });
+        });
+    }
+
+    async function toggleMcpConnection(connectionId, enabled) {
+        if (enabled) {
+            enabledMcpConnections.add(connectionId);
+        } else {
+            enabledMcpConnections.delete(connectionId);
+        }
+        await fetch(`/api/v1/chats/${config.chatId}/mcp`, {
+            method: 'PUT',
+            headers: apiHeaders(config.userId),
+            body: JSON.stringify({ connectionIds: Array.from(enabledMcpConnections) })
+        });
+    }
 
     async function loadChatList() {
         const resp = await fetch('/api/v1/chats', { headers: apiHeaders(config.userId) });
@@ -242,7 +317,22 @@
         entry.className = 'activity-entry';
 
         if (activity.type === 'tool_call') {
-            entry.textContent = '🔧 Tool: ' + (activity.toolName || activity.name || 'unknown');
+            const status = activity.status || 'running';
+            const source = activity.source ? ' [' + activity.source + ']' : '';
+            const toolName = activity.toolName || activity.name || 'unknown';
+            let label = '🔧 Tool' + source + ': ' + toolName;
+            if (status === 'failed') {
+                label += ' (failed)';
+            } else if (status === 'done') {
+                label += ' (done)';
+            }
+            entry.textContent = label;
+            if (activity.message) {
+                const detail = document.createElement('div');
+                detail.className = 'activity-detail';
+                detail.textContent = activity.message;
+                entry.appendChild(detail);
+            }
         } else if (activity.type === 'reasoning') {
             entry.innerHTML = '💭 ' + escapeHtml(activity.message || activity.text || '');
         } else if (activity.type === 'todo_update') {
@@ -374,4 +464,5 @@
 
     loadChatList();
     loadHistory();
+    loadMcpPanel();
 })();

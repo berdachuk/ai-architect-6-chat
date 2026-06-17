@@ -54,3 +54,11 @@
 - Tests: `McpServerRegistryTest`, `MCPToolAdvisorTest`, `McpConnectionControllerIntegrationTest`, `McpClientIntegrationTest`
 - **Plan:** M-08 archived; M-09 active for M8 per-chat MCP UI
 
+## 2026-06-17 — M8 Per-chat MCP + UI toggles
+
+- Sidebar MCP panel in `chat.html` / `chat.js` with per-chat toggles
+- `ActivityReportingToolCallback` publishes `tool_call` SSE activity events
+- `McpBootstrapSeeder` seeds `medical-dataset` from `MCP_MEDICAL_URL` when catalog empty
+- Tests: `ChatMcpSelectionIntegrationTest`, `McpBootstrapSeederTest`, `ActivityReportingToolCallbackTest`
+- **Plan:** M-09 archived; M-10 active for M9 Docker + polish
+

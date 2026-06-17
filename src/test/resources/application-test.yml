@@ -33,3 +33,8 @@ spring:
           max-turns: 20
           max-tokens: 4000
           window-turns: 30
+
+ai-chat:
+  mcp:
+    bootstrap:
+      enabled: false

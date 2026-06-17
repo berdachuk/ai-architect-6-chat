@@ -1,7 +1,5 @@
-package com.berdachuk.aichat.mcp.rest;
+package com.berdachuk.aichat.chat.rest;
 
-import com.berdachuk.aichat.mcp.rest.dto.CreateMcpConnectionRequest;
-import com.berdachuk.aichat.mcp.rest.dto.McpConnectionView;
 import com.berdachuk.aichat.support.PostgresTestSupport;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -15,17 +13,15 @@ import org.springframework.web.client.RestClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-class McpConnectionControllerIntegrationTest {
+class ChatMcpSelectionIntegrationTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17")
@@ -48,43 +44,49 @@ class McpConnectionControllerIntegrationTest {
     private JsonMapper jsonMapper;
 
     @Test
-    void mcpConnectionCrudViaRest() throws Exception {
+    void chatMcpSelectionRoundTrip() throws Exception {
         RestClient client = RestClient.builder()
                 .baseUrl("http://localhost:" + port)
-                .defaultHeader("X-User-Id", "mcp-it-user")
+                .defaultHeader("X-User-Id", "mcp-chat-user")
                 .build();
 
-        assertThat(client.get().uri("/api/v1/mcp/connections").retrieve().body(McpConnectionView[].class))
-                .isEmpty();
+        String chatJson = client.post()
+                .uri("/api/v1/chats")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"name\":\"MCP Chat\",\"agentId\":\"auto\"}")
+                .retrieve()
+                .body(String.class);
+        String chatId = jsonMapper.readTree(chatJson).get("id").asString();
 
-        CreateMcpConnectionRequest request = new CreateMcpConnectionRequest(
-                "test-server",
-                "http://localhost:59999/sse",
-                true,
-                false,
-                false);
-        McpConnectionView created = client.post()
+        String connectionJson = client.post()
                 .uri("/api/v1/mcp/connections")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(jsonMapper.writeValueAsString(request))
+                .body("""
+                        {
+                          "name": "test-catalog",
+                          "url": "http://localhost:59998/sse",
+                          "tools": true,
+                          "resources": false,
+                          "prompts": false
+                        }
+                        """)
                 .retrieve()
-                .body(McpConnectionView.class);
+                .body(String.class);
+        String connectionId = jsonMapper.readTree(connectionJson).get("id").asString();
 
-        assertThat(created.name()).isEqualTo("test-server");
-        assertThat(created.status()).isEqualTo("DOWN");
-
-        List<McpConnectionView> listed = Arrays.asList(client.get()
-                .uri("/api/v1/mcp/connections")
-                .retrieve()
-                .body(McpConnectionView[].class));
-        assertThat(listed).hasSize(1);
-
-        client.delete()
-                .uri("/api/v1/mcp/connections/{id}", created.id())
+        client.put()
+                .uri("/api/v1/chats/{chatId}/mcp", chatId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(jsonMapper.writeValueAsString(
+                        jsonMapper.createObjectNode().putPOJO("connectionIds", java.util.List.of(connectionId))))
                 .retrieve()
                 .toBodilessEntity();
 
-        assertThat(client.get().uri("/api/v1/mcp/connections").retrieve().body(McpConnectionView[].class))
-                .isEmpty();
+        JsonNode selection = jsonMapper.readTree(client.get()
+                .uri("/api/v1/chats/{chatId}/mcp", chatId)
+                .retrieve()
+                .body(String.class));
+        assertThat(selection.get("connectionIds")).hasSize(1);
+        assertThat(selection.get("connectionIds").get(0).asString()).isEqualTo(connectionId);
     }
 }

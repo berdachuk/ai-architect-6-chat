@@ -4,15 +4,15 @@
 
 ## Current focus
 
-**M7 complete.** Next: **M8** — per-chat MCP UI per [M-09-m8-per-chat-mcp-ui.md](../plans/M-09-m8-per-chat-mcp-ui.md).
+**M8 complete.** Next: **M9** — Docker + polish per [M-10-m9-docker-polish.md](../plans/M-10-m9-docker-polish.md).
 
 ## In progress
 
-- [x] M1–M7 complete
-- [ ] M8: MCP picker UI, per-chat toggles, ai-architect-6-mcp smoke
+- [x] M1–M8 complete
+- [ ] M9: Dockerfile, docker-compose, CI, MCP health indicator
 
 ## Next steps
 
-1. Thymeleaf MCP panel + `chat.js` toggles
-2. Bootstrap `medical-dataset` connection seed
-3. IT for scoped tool injection per chat
+1. Multi-stage `Dockerfile` + `docker-compose.yml`
+2. GitHub Actions CI
+3. `McpConnectionHealthIndicator` in `system/`

@@ -859,7 +859,7 @@ ai-chat:
 | # | Milestone | Key deliverables | Acceptance criteria | Status |
 |---|---|---|---|---|
 | M7 | MCP client + runtime catalog | `McpClientConfig`, `McpServerRegistry`, `MCPToolAdvisor`, `mcp_connection` table, REST `/api/v1/mcp/connections` | REQ-MCP-09/10/14; add connection via API without redeploy; WireMock IT | ✅ |
-| M8 | Per-chat MCP + ai-architect-6-mcp | Chat `enabledMcpConnections`, UI toggles, `PUT .../mcp` | User enables medical-dataset for chat → tools from `:8092`; REQ-MCP-11–13 | ⬜ |
+| M8 | Per-chat MCP + ai-architect-6-mcp | Chat `enabledMcpConnections`, UI toggles, `PUT .../mcp` | User enables medical-dataset for chat → tools from `:8092`; REQ-MCP-11–13 | ✅ |
 
 ### Phase 3 — Packaging
 

@@ -1,7 +1,10 @@
 package com.berdachuk.aichat.llm.advisor;
 
+import com.berdachuk.aichat.llm.service.ChatStreamActivityPublisher;
+import com.berdachuk.aichat.llm.tool.ActivityReportingToolCallback;
 import com.berdachuk.aichat.mcp.registry.McpServerRegistry;
 import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.session.advisor.SessionMemoryAdvisor;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
 import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
@@ -22,9 +25,11 @@ public class MCPToolAdvisor implements BaseAdvisor {
     public static final String ENABLED_CONNECTIONS_CONTEXT_KEY = "mcp_enabled_connections";
 
     private final McpServerRegistry registry;
+    private final ChatStreamActivityPublisher activityPublisher;
 
-    public MCPToolAdvisor(McpServerRegistry registry) {
+    public MCPToolAdvisor(McpServerRegistry registry, ChatStreamActivityPublisher activityPublisher) {
         this.registry = registry;
+        this.activityPublisher = activityPublisher;
     }
 
     @Override
@@ -45,7 +50,8 @@ public class MCPToolAdvisor implements BaseAdvisor {
         }
 
         String catalog = registry.getToolCatalogText(enabledConnections);
-        List<ToolCallback> toolCallbacks = registry.getToolCallbacks(enabledConnections);
+        List<ToolCallback> toolCallbacks = wrapForActivity(
+                registry.getToolCallbacks(enabledConnections), resolveSessionId(request));
         if (catalog.isBlank() && toolCallbacks.isEmpty()) {
             return request;
         }
@@ -95,6 +101,20 @@ public class MCPToolAdvisor implements BaseAdvisor {
             return Set.of(single);
         }
         return List.of();
+    }
+
+    private List<ToolCallback> wrapForActivity(List<ToolCallback> callbacks, String sessionId) {
+        if (sessionId == null || sessionId.isBlank()) {
+            return callbacks;
+        }
+        return callbacks.stream()
+                .<ToolCallback>map(callback -> new ActivityReportingToolCallback(callback, activityPublisher, sessionId))
+                .toList();
+    }
+
+    private static String resolveSessionId(ChatClientRequest request) {
+        Object value = request.context().get(SessionMemoryAdvisor.SESSION_ID_CONTEXT_KEY);
+        return value == null ? null : value.toString();
     }
 
     private static String combineCatalog(String existing, String catalog) {

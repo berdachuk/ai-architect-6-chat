@@ -27,20 +27,24 @@ public class McpConnectionService {
     private final McpClientConnector connector;
     private final McpServerRegistry registry;
     private final ApplicationEventPublisher eventPublisher;
+    private final McpBootstrapSeeder bootstrapSeeder;
 
     public McpConnectionService(
             McpConnectionRepository repository,
             McpClientConnector connector,
             McpServerRegistry registry,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            McpBootstrapSeeder bootstrapSeeder) {
         this.repository = repository;
         this.connector = connector;
         this.registry = registry;
         this.eventPublisher = eventPublisher;
+        this.bootstrapSeeder = bootstrapSeeder;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void loadCatalogOnStartup() {
+        bootstrapSeeder.seedIfEmpty();
         repository.findAll().forEach(connector::connect);
     }
 

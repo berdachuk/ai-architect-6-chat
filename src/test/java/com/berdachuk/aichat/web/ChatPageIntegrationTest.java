@@ -53,6 +53,7 @@ class ChatPageIntegrationTest {
         assertThat(body)
                 .contains("AI Chat")
                 .contains("id=\"composer\"")
+                .contains("id=\"mcpPanel\"")
                 .contains("/js/chat.js")
                 .contains("window.AICHAT_CONFIG");
     }
@@ -72,5 +73,6 @@ class ChatPageIntegrationTest {
                 .retrieve()
                 .body(String.class);
         assertThat(js).contains("processSseEvent");
+        assertThat(js).contains("loadMcpPanel");
     }
 }

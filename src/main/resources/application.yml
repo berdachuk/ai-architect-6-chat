@@ -62,6 +62,14 @@ server:
 ai-chat:
   features:
     mcp-client: true
+  mcp:
+    bootstrap:
+      enabled: true
+      name: medical-dataset
+      url: ${MCP_MEDICAL_URL:http://localhost:8092/sse}
+      tools: true
+      resources: true
+      prompts: true
   harness:
     max-iterations: 2
     retry-on-verify-fail: true

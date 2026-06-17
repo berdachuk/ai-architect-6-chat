@@ -1,0 +1,24 @@
+spring:
+  ai:
+    custom:
+      chat:
+        provider: stub
+        base-url: http://localhost:11434
+        api-key: test
+        model: stub-model
+        temperature: 0.7
+        max-tokens: 1024
+      chat-alt:
+        provider: stub
+        base-url: http://localhost:11434
+        api-key: test
+        model: stub-model
+        temperature: 0.7
+        max-tokens: 1024
+      tool-calling:
+        provider: stub
+        base-url: http://localhost:11434
+        api-key: test
+        model: stub-model
+        temperature: 0.3
+        max-tokens: 1024

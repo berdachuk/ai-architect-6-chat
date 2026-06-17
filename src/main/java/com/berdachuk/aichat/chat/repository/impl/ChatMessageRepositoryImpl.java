@@ -4,6 +4,7 @@ import com.berdachuk.aichat.chat.domain.ChatMessage;
 import com.berdachuk.aichat.chat.repository.ChatMessageRepository;
 import com.berdachuk.aichat.core.repository.sql.InjectSql;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import tools.jackson.core.JacksonException;
@@ -54,15 +55,15 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepository {
 
     @Override
     public ChatMessage insert(ChatMessage message) {
-        jdbc.update(insertMessageSql, Map.of(
-                "id", message.id(),
-                "chatId", message.chatId(),
-                "role", message.role(),
-                "content", message.content(),
-                "sequenceNumber", message.sequenceNumber(),
-                "tokensUsed", message.tokensUsed(),
-                "createdAt", Timestamp.from(message.createdAt()),
-                "metadata", toJson(message.metadata())));
+        jdbc.update(insertMessageSql, new MapSqlParameterSource()
+                .addValue("id", message.id())
+                .addValue("chatId", message.chatId())
+                .addValue("role", message.role())
+                .addValue("content", message.content())
+                .addValue("sequenceNumber", message.sequenceNumber())
+                .addValue("tokensUsed", message.tokensUsed())
+                .addValue("createdAt", Timestamp.from(message.createdAt()))
+                .addValue("metadata", toJson(message.metadata())));
         return message;
     }
 

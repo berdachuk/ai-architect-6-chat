@@ -46,5 +46,6 @@ class OpenApiDocsIntegrationTest {
         assertThat(body).contains("listChats");
         assertThat(body).contains("createChat");
         assertThat(body).contains("history");
+        assertThat(body).contains("streamMessage");
     }
 }

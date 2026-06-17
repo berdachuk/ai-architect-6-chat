@@ -1,6 +1,14 @@
 spring:
   application:
     name: ai-chat
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
   datasource:
     url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:5432/${AICHAT_DB_NAME:ai_chat}
     username: ${AICHAT_DB_USERNAME:ai_chat}
@@ -10,6 +18,29 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
     default-schema: ai_chat
+  ai:
+    custom:
+      chat:
+        provider: ollama
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        api-key: ${OLLAMA_API_KEY:ollama}
+        model: ${OLLAMA_CHAT_MODEL:gemma3:4b}
+        temperature: 0.7
+        max-tokens: 4096
+      chat-alt:
+        provider: ollama
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        api-key: ${OLLAMA_API_KEY:ollama}
+        model: ${OLLAMA_CHAT_ALT_MODEL:gemma3:4b}
+        temperature: 0.7
+        max-tokens: 4096
+      tool-calling:
+        provider: ollama
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        api-key: ${OLLAMA_API_KEY:ollama}
+        model: ${OLLAMA_TOOL_MODEL:gemma3:4b}
+        temperature: 0.3
+        max-tokens: 4096
 
 server:
   port: ${SERVER_PORT:8095}

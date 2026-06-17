@@ -25,13 +25,14 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/api/v1/**",
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/actuator/health",
                                 "/actuator/info")
                         .permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
     }

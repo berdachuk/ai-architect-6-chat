@@ -4,7 +4,13 @@ management:
     health:
       show-details: never
       show-components: never
+    prometheus:
+      access: read_only
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true

@@ -39,6 +39,9 @@ ai-chat:
     bootstrap:
       enabled: false
 
+  security:
+    oauth2-enabled: false
+
 management:
   endpoint:
     health:

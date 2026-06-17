@@ -1,0 +1,12 @@
+# Optional profile — enable JWT validation (e.g. SPRING_PROFILES_ACTIVE=oauth2).
+# Requires a reachable issuer (Keycloak, Auth0, Azure AD, etc.).
+ai-chat:
+  security:
+    oauth2-enabled: true
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH2_ISSUER_URI:https://your-idp.example.com/realms/your-realm}

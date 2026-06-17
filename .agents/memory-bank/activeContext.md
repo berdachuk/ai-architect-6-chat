@@ -4,14 +4,15 @@
 
 ## Current focus
 
-**v1.0.0 released.** All milestones M1–M9 complete. Optional backlog in [M-12-ongoing-maintenance.md](../plans/M-12-ongoing-maintenance.md).
+**M-12 complete.** OAuth2 optional profile, user guide, Prometheus prod metrics, README alignment. Next: [M-13-e2e-observability.md](../plans/M-13-e2e-observability.md).
 
 ## In progress
 
 - [x] M1–M9 complete
-- [x] M-11 release hardening (actuator, smoke automation, docs alignment)
+- [x] M-11 release hardening
+- [x] M-12 OAuth2 (default off), user guide, Prometheus, README models
 
 ## Next steps (optional)
 
-1. OAuth2/JWT for production identity
-2. Playwright E2E for browser smoke items
+1. Playwright E2E smoke tests
+2. Grafana dashboards for Prometheus

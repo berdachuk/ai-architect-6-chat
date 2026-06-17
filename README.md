@@ -20,7 +20,7 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 | Transport | HTTP + SSE (`text/event-stream`) |
 | Database | PostgreSQL 17 (`ai_chat` schema) |
 | LLM client | Spring AI OpenAI-compatible (`OpenAiChatModel`) |
-| LLM backend (default) | Ollama (`http://localhost:11434/v1`) |
+| LLM backend (default) | Ollama (`http://localhost:11434`) |
 | Base package | `com.berdachuk.aichat` |
 | MCP transport | SSE (`McpSyncClient`) |
 
@@ -36,7 +36,7 @@ Built on the chat patterns from [med-expert-match-ce](https://github.com/berdach
 | **Harness workflow** | Generic `ChatWorkflowEngine` — planning, tool execution, verification, policy gate |
 | **Agent progress UI** | Real-time SSE events: `activity`, `pipeline_stage`, `agent` (ported from med-expert-match-ce) |
 | **MCP client** | Optional — runtime catalog (add servers without redeploy); per-chat MCP toggles; chat works when none selected |
-| **Multi-role LLM** | `gemma4:31b-cloud` for chat; `functiongemma:270m` for tool calling |
+| **Multi-role LLM** | Configurable via `OLLAMA_CHAT_MODEL`, `OLLAMA_CHAT_ALT_MODEL`, `OLLAMA_TOOL_MODEL` (default `gemma3:4b`) |
 | **OpenAI-compatible client** | Spring AI `OpenAiChatModel`; default backend **Ollama**; swappable via env vars |
 | **Spring Modulith** | Package modules with `allowedDependencies`; `verify()` in CI |
 
@@ -62,7 +62,7 @@ Browser (Thymeleaf + chat.js)
         ▼
    ai-chat :8095
         ├── PostgreSQL 17  (sessions, messages, ai_session)
-        ├── Ollama         (gemma4:31b-cloud, gemma4:12b, functiongemma:270m)
+        ├── Ollama         (default `gemma3:4b` — override via `OLLAMA_*` env vars)
         └── MCP server(s)  (ai-architect-6-mcp :8092/sse — phase 2)
 ```
 
@@ -88,22 +88,24 @@ Details: [docs/02-architecture.md](docs/02-architecture.md)
 
 ## LLM connection
 
-- **Client:** Spring AI OpenAI-compatible (`OpenAiChatModel` + `OpenAiApi` + `ChatClient`)
-- **Default backend:** Ollama at `http://localhost:11434/v1` (all roles)
-- **Override:** per-role `CHAT_*`, `CHAT_ALT_*`, `TOOL_CALLING_*` env vars
+- **Client:** Spring AI Ollama provider (`OpenAiChatModel`-compatible factory)
+- **Default backend:** Ollama at `http://localhost:11434`
+- **Override:** `OLLAMA_BASE_URL`, `OLLAMA_CHAT_MODEL`, `OLLAMA_CHAT_ALT_MODEL`, `OLLAMA_TOOL_MODEL`
 
 ## LLM models (Ollama)
 
-| Role | Model | Purpose |
-|---|---|---|
-| Primary chat | `gemma4:31b-cloud` | Reasoning, streaming response, structured output |
-| Alternative chat | `gemma4:12b` | Lighter fallback |
-| Tool calling | `functiongemma:270m` | MCP tool invocation (`ToolCallingAdvisor`) |
+Defaults match `src/main/resources/application.yml`. Override per role with env vars.
+
+| Role | Env var | Default model | Purpose |
+|---|---|---|---|
+| Primary chat | `OLLAMA_CHAT_MODEL` | `gemma3:4b` | Reasoning, streaming response |
+| Alternative chat | `OLLAMA_CHAT_ALT_MODEL` | `gemma3:4b` | Lighter fallback |
+| Tool calling | `OLLAMA_TOOL_MODEL` | `gemma3:4b` | MCP tool invocation (`ToolCallingAdvisor`) |
 
 ```bash
-ollama pull gemma4:31b-cloud
-ollama pull gemma4:12b
-ollama pull functiongemma:270m
+ollama pull gemma3:4b
+# optional larger models:
+# ollama pull gemma4:31b-cloud && export OLLAMA_CHAT_MODEL=gemma4:31b-cloud
 ```
 
 ---
@@ -214,6 +216,7 @@ Full index: **[docs/README.md](docs/README.md)**
 | [03-design.md](docs/03-design.md) | Detailed design (SDD) — schema, services, frontend |
 | [04-testing.md](docs/04-testing.md) | Test strategy and CI gates |
 | [05-deployment.md](docs/05-deployment.md) | Config, Docker, env vars, Ollama, MCP |
+| [user-guide.md](docs/user-guide.md) | **User guide** — using the chat UI |
 | [AGENTS.md](AGENTS.md) | AI agent index (skills, memory bank) |
 | [ai-context-strategy.md](docs/ai-context-strategy.md) | Agent context architecture |
 

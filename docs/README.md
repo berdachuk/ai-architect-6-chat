@@ -37,6 +37,7 @@ General-purpose AI chat with multi-session history, long-dialog memory, optional
 | 2 | [03-design.md](03-design.md) | SDD — schema, services, MCP client, Harness, frontend |
 | 3 | [04-testing.md](04-testing.md) | Test pyramid, contracts, CI gates |
 | 4 | [05-deployment.md](05-deployment.md) | Config, Docker, Ollama, MCP connection |
+| + | [user-guide.md](user-guide.md) | **End-user guide** — chat UI, sessions, MCP, troubleshooting |
 | + | [ai-context-strategy.md](ai-context-strategy.md) | AI agent context layers, memory bank, skills |
 
 ## Implementation phases

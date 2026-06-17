@@ -865,7 +865,7 @@ ai-chat:
 
 | # | Milestone | Key deliverables | Acceptance criteria | Status |
 |---|---|---|---|---|
-| M9 | Docker + polish | `docker-compose.yml`, `Dockerfile`, integration tests, smoke checklist | `docker compose up` healthy; manual smoke checklist complete | ⬜ |
+| M9 | Docker + polish | `docker-compose.yml`, `Dockerfile`, integration tests, smoke checklist | `docker compose up` healthy; manual smoke checklist complete | ✅ |
 
 ---
 

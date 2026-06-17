@@ -32,6 +32,15 @@ class McpServerRegistryTest {
         assertThat(registry.getToolCatalogText(List.of())).isBlank();
     }
 
+    @Test
+    void buildsHealthViewForRegistryState() {
+        McpServerRegistry registry = new McpServerRegistry();
+        registry.register("conn-1", serverInfo("conn-1", "medical", ServerStatus.DOWN, tool("search", "Search")));
+
+        assertThat(registry.healthView().status()).isEqualTo("DEGRADED");
+        assertThat(registry.healthView().reachable()).isZero();
+    }
+
     private static McpServerInfo serverInfo(
             String id, String name, ServerStatus status, McpSchema.Tool tool) {
         return new McpServerInfo(

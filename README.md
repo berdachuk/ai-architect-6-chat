@@ -6,7 +6,7 @@ General-purpose AI chat with multi-session history, long-dialog memory, optional
 
 Built on the chat patterns from [med-expert-match-ce](https://github.com/berdachuk/med-expert-match-ce) — without graph databases, medical domain logic, or evaluation frameworks. Connects to [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) for MCP tool enrichment (phase 2).
 
-**Version:** 1.0.0-SNAPSHOT · **Status:** `develop` — M1 complete; M2 in progress
+**Version:** 1.0.0-SNAPSHOT · **Status:** `develop` — M1–M9 complete
 
 ---
 
@@ -139,11 +139,31 @@ Track progress: [docs/01-requirements.md §14](docs/01-requirements.md#14-milest
 
 ## Quick start
 
-**Prerequisites:** JDK 21, Maven 3.9+, Docker (WSL 2 on Windows per DEC-008), Ollama for M3+.
+**Prerequisites:** JDK 21, Maven 3.9+, Docker (WSL 2 on Windows per DEC-008), Ollama for LLM.
+
+### Docker Compose (recommended)
+
+Runs PostgreSQL + ai-chat. Ollama and optional MCP run on the host (`host.docker.internal`).
 
 ```bash
-mvn test                      # unit + Modulith (M1+)
-mvn verify -Pintegration        # + Testcontainers Flyway IT (DEC-009)
+docker compose up --build
+```
+
+Open `http://localhost:8095/`. Health: `GET http://localhost:8095/actuator/health`
+
+With [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) on the host (`:8092`):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.mcp-host.yml up --build
+```
+
+Manual smoke checklist: [docs/04-testing.md §7](docs/04-testing.md#7-manual-smoke-checklist)
+
+### Local development
+
+```bash
+mvn test                      # unit + Modulith
+mvn verify -Pintegration        # + Testcontainers IT (DEC-009)
 
 # Local run (needs PostgreSQL)
 docker run -d --name ai-chat-postgres \
@@ -154,7 +174,7 @@ mvn spring-boot:run
 
 Open `http://localhost:8095/`
 
-**With MCP (phase 2):**
+**With MCP on host:**
 
 ```bash
 # Terminal 1 — ai-architect-6-mcp

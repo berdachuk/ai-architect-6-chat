@@ -59,6 +59,16 @@ spring:
 server:
   port: ${SERVER_PORT:8095}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+
 ai-chat:
   features:
     mcp-client: true

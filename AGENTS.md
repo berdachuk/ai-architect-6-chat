@@ -1,6 +1,6 @@
 # AGENTS.md — ai-architect-6-chat (`ai-chat`)
 
-General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **M8 implemented** — per-chat MCP UI toggles. Next: M9 per [docs/01-requirements.md](docs/01-requirements.md).
+General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **M9 implemented** — Docker packaging, CI, MCP health actuator. All milestones M1–M9 complete per [docs/01-requirements.md](docs/01-requirements.md).
 
 **Stack:** Java 21 · Spring Boot 4.1 · Spring AI 2.0 · Spring Modulith · PostgreSQL 17 · Thymeleaf SSR · Ollama (OpenAI-compatible client)
 
@@ -18,7 +18,7 @@ docs/          canonical SRS, SAD, SDD, testing, deployment
 .agents/       skills, memory-bank, plans (agent context layer)
 ```
 
-**Modulith deps:** `web→{core,chat,llm}` · `chat→core` · `llm→{core,chat,mcp}` · `mcp→core` · `system→{core,mcp}`
+**Modulith deps:** `web→{core,chat,llm}` · `chat→core` · `llm→{core,chat,mcp}` · `mcp→core` · `system→{core,mcp :: registry}`
 
 ## Commands (once `pom.xml` exists)
 

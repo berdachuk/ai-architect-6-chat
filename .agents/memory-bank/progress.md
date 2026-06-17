@@ -62,3 +62,12 @@
 - Tests: `ChatMcpSelectionIntegrationTest`, `McpBootstrapSeederTest`, `ActivityReportingToolCallbackTest`
 - **Plan:** M-09 archived; M-10 active for M9 Docker + polish
 
+## 2026-06-17 — M9 Docker + polish
+
+- Multi-stage `Dockerfile`, `docker-compose.yml`, optional `docker-compose.mcp-host.yml`
+- GitHub Actions CI (`.github/workflows/ci.yml`)
+- `McpConnectionHealthIndicator` + `spring-boot-starter-actuator`
+- README Docker quick-start; requirements M9 ✅
+- Tests: `McpConnectionHealthIndicatorTest`, `ActuatorHealthIntegrationTest`
+- **Plan:** M-10 archived; M-11 active for release/maintenance
+

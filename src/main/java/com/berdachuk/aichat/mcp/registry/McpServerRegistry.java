@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +47,24 @@ public class McpServerRegistry {
 
     public List<McpServerInfo> getAllServers() {
         return List.copyOf(servers.values());
+    }
+
+    public McpConnectionHealthView healthView() {
+        List<McpServerInfo> allServers = getAllServers();
+        if (allServers.isEmpty()) {
+            return McpConnectionHealthView.empty();
+        }
+
+        long reachable = allServers.stream().filter(server -> server.status() == ServerStatus.UP).count();
+        Map<String, Map<String, Object>> serverDetails = new LinkedHashMap<>();
+        allServers.forEach(server -> serverDetails.put(server.connectionName(), Map.of(
+                "status", server.status().name(),
+                "url", server.url(),
+                "tools", server.tools().size(),
+                "reason", server.downReason() == null ? "" : server.downReason())));
+
+        String status = reachable > 0 ? "UP" : "DEGRADED";
+        return new McpConnectionHealthView(status, allServers.size(), (int) reachable, null, serverDetails);
     }
 
     public List<McpServerInfo> getReachableServers() {

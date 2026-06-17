@@ -4,15 +4,14 @@
 
 ## Current focus
 
-**M8 complete.** Next: **M9** — Docker + polish per [M-10-m9-docker-polish.md](../plans/M-10-m9-docker-polish.md).
+**M9 complete.** All milestones M1–M9 delivered. See [M-11-m10-release-maintenance.md](../plans/M-11-m10-release-maintenance.md) for optional follow-ups.
 
 ## In progress
 
-- [x] M1–M8 complete
-- [ ] M9: Dockerfile, docker-compose, CI, MCP health indicator
+- [x] M1–M9 complete
 
-## Next steps
+## Next steps (optional)
 
-1. Multi-stage `Dockerfile` + `docker-compose.yml`
-2. GitHub Actions CI
-3. `McpConnectionHealthIndicator` in `system/`
+1. Tag `v1.0.0` release
+2. Harden production config (secrets, actuator exposure)
+3. Expand smoke automation beyond manual checklist

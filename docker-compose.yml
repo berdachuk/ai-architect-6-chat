@@ -1,0 +1,44 @@
+services:
+  ai-chat:
+    build: .
+    ports:
+      - "8095:8095"
+    environment:
+      AICHAT_DB_HOST: postgres
+      AICHAT_DB_PORT: 5432
+      AICHAT_DB_USERNAME: ai_chat
+      AICHAT_DB_PASSWORD: ai_chat
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_API_KEY: ollama
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-gemma3:4b}
+      OLLAMA_CHAT_ALT_MODEL: ${OLLAMA_CHAT_ALT_MODEL:-gemma3:4b}
+      OLLAMA_TOOL_MODEL: ${OLLAMA_TOOL_MODEL:-gemma3:4b}
+      MCP_MEDICAL_URL: ${MCP_MEDICAL_URL:-http://host.docker.internal:8092/sse}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8095/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ai_chat
+      POSTGRES_USER: ai_chat
+      POSTGRES_PASSWORD: ai_chat
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_chat -d ai_chat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

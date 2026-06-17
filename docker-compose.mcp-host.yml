@@ -1,0 +1,6 @@
+# Optional override when ai-architect-6-mcp runs on the host (port 8092).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.mcp-host.yml up --build
+services:
+  ai-chat:
+    environment:
+      MCP_MEDICAL_URL: http://host.docker.internal:8092/sse

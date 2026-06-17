@@ -234,7 +234,7 @@ Click **+** / **−** to expand or collapse the detail list.
 | Problem | What to try |
 |---|---|
 | Page does not load | Confirm ai-chat is running; check `http://localhost:8095/actuator/health` |
-| No assistant reply / stream error | Start Ollama; pull the configured model (default `gemma3:4b`) |
+| No assistant reply / stream error | Start Ollama; pull the configured model (default `gemma4:31b-cloud`) |
 | Slow first reply | Model may be loading into memory — wait and retry |
 | MCP shows `DOWN` | Start the MCP server; check URL (default `http://localhost:8092/sse`) |
 | MCP checkbox has no effect | Server must be `UP`; only enabled servers are used for that chat |

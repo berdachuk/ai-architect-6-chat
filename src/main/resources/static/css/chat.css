@@ -1,0 +1,122 @@
+.message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.message-user {
+    background: #e3f2fd;
+}
+
+.message-assistant {
+    background: #f5f5f5;
+}
+
+.message-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.message-content pre {
+    background: #263238;
+    color: #eeffff;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    overflow-x: auto;
+}
+
+.message-content code {
+    font-size: 0.875rem;
+}
+
+.chat-item {
+    padding: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.chat-item.active {
+    background: #e3f2fd;
+}
+
+.chat-item:hover {
+    background: #f0f0f0;
+}
+
+.chat-item-link {
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+}
+
+.chat-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-meta {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.delete-chat-btn,
+.rename-chat-btn {
+    visibility: hidden;
+    flex-shrink: 0;
+}
+
+.chat-item:hover .delete-chat-btn,
+.chat-item:hover .rename-chat-btn {
+    visibility: visible;
+}
+
+.activity-entry {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.8rem;
+}
+
+.activity-entry:last-child {
+    border-bottom: none;
+}
+
+.activity-detail {
+    font-size: 0.75rem;
+    background: #f8f9fa;
+    padding: 0.25rem;
+    margin: 0.25rem 0 0 1rem;
+    border-radius: 0.25rem;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.pipeline-stage {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0;
+}
+
+.pipeline-stage .stage-icon {
+    width: 1rem;
+    text-align: center;
+}
+
+#agentPanel {
+    max-height: 220px;
+    overflow-y: auto;
+}

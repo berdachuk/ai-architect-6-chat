@@ -4,15 +4,15 @@
 
 ## Current focus
 
-**M5 complete.** Next: **M6** — Thymeleaf chat UI per [M-07-m6-thymeleaf-ui.md](../plans/M-07-m6-thymeleaf-ui.md).
+**M6 complete.** Next: **M7** — MCP client per [M-08-m7-mcp-client.md](../plans/M-08-m7-mcp-client.md).
 
 ## In progress
 
-- [x] M1–M5 complete
-- [ ] M6: Thymeleaf SSR, chat.js, agent panel
+- [x] M1–M6 complete
+- [ ] M7: MCP registry, connections API, MCPToolAdvisor
 
 ## Next steps
 
-1. `web/` module with `ChatPageController` + `chat.html`
-2. SSE client for stream + harness events
-3. Sidebar session CRUD UX
+1. `mcp_connection` schema + REST catalog
+2. `McpServerRegistry` + SSE client bootstrap
+3. `MCPToolAdvisor` wired into chat client chain

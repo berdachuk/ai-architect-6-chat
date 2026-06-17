@@ -39,3 +39,9 @@
 - SSE `agent`, `pipeline_stage`, `activity` on stream endpoint
 - **Plan:** M-06 archived; M-07 active for M6 Thymeleaf UI
 
+## 2026-06-17 — M6 Thymeleaf chat UI
+
+- `ChatWebController`, `chat.html`, `chat.css`, `chat.js` (SSE + agent panel)
+- Sidebar CRUD via REST; `ChatPageIntegrationTest`
+- **Plan:** M-07 archived; M-08 active for M7 MCP client
+

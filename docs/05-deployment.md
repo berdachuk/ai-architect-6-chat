@@ -8,117 +8,62 @@
 
 ## Application Configuration
 
-### `application.yml`
+### `application.yml` (canonical — matches `src/main/resources/application.yml`)
 
 ```yaml
 spring:
-  application:
-    name: ai-chat
-  autoconfigure:
-    exclude:
-      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
-      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
-      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
-      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
-      - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
   datasource:
     url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:${AICHAT_DB_PORT:5437}/${AICHAT_DB_NAME:ai_chat}?currentSchema=ai_chat
     username: ${AICHAT_DB_USERNAME:ai_chat}
     password: ${AICHAT_DB_PASSWORD:ai_chat}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 3
-      connection-timeout: 20000
-      idle-timeout: 300000
-      max-lifetime: 1800000
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-    default-schema: ai_chat
   ai:
-    openai:
-      enabled: false
-    custom:
-      chat:
-        provider: openai
-        base-url: ${CHAT_BASE_URL:http://localhost:11434/v1}
-        api-key: ${CHAT_API_KEY:none}
-        model: ${CHAT_MODEL:gemma4:31b-cloud}
-        temperature: 0.7
-        max-tokens: 6000
-      chat-alt:
-        provider: openai
-        base-url: ${CHAT_ALT_BASE_URL:http://localhost:11434/v1}
-        api-key: ${CHAT_ALT_API_KEY:none}
-        model: ${CHAT_ALT_MODEL:gemma4:12b}
-        temperature: 0.7
-        max-tokens: 6000
-      tool-calling:
-        provider: openai
-        base-url: ${TOOL_CALLING_BASE_URL:http://localhost:11434/v1}
-        api-key: ${TOOL_CALLING_API_KEY:none}
-        model: ${TOOL_CALLING_MODEL:functiongemma:270m}
-        temperature: 0.1
-        max-tokens: 2048
     mcp:
       client:
-        sse:
-          connections:
-            medical-dataset:
-              url: ${MCP_MEDICAL_URL:http://localhost:8092/sse}
-              tools: true
-              resources: true
-              prompts: true
-    session:
-      jdbc:
-        schema: ai_chat
-        compaction:
-          strategy: turn-window
-          max-turns: 20
-          max-tokens: 4000
-          window-turns: 30
+        enabled: false   # runtime catalog via REST + McpBootstrapSeeder
+    custom:
+      chat:
+        provider: ollama
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        api-key: ${OLLAMA_API_KEY:ollama}
+        model: ${OLLAMA_CHAT_MODEL:gemma3:4b}
+      chat-alt:
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        model: ${OLLAMA_CHAT_ALT_MODEL:gemma3:4b}
+      tool-calling:
+        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+        model: ${OLLAMA_TOOL_MODEL:gemma3:4b}
 
 server:
   port: ${SERVER_PORT:8095}
-  shutdown: graceful
-  compression:
-    enabled: true
-    mime-types: application/json, text/event-stream
-    min-response-size: 1024
 
 management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics
+        include: health,info
   endpoint:
     health:
-      show-details: always
-      probes:
-        enabled: true
+      show-details: never        # use test profile or MANAGEMENT_* override for details
+      show-components: never
 
 ai-chat:
-  harness:
-    max-iterations: 2
-    retry-on-verify-fail: true
-    policy-gate-enabled: true
-    human-checkpoint-enabled: false
   features:
     mcp-client: true
-    harness: true
-    structured-output: true
-
-logging:
-  level:
-    com.berdachuk.aichat: INFO
-    com.berdachuk.aichat.llm: DEBUG
-    com.berdachuk.aichat.mcp: DEBUG
-    org.springframework.ai.mcp: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  mcp:
+    bootstrap:
+      enabled: true
+      name: medical-dataset
+      url: ${MCP_MEDICAL_URL:http://localhost:8092/sse}
 ```
+
+**Profiles:**
+
+| Profile | Purpose |
+|---|---|
+| `test` | Stub LLM + health details for integration tests (`application-test.yml`) |
+| `prod` | Stricter actuator defaults (`application-prod.yml`) |
+
+Set `SPRING_PROFILES_ACTIVE=prod` in production. Override health detail exposure with `MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=when_authorized` if needed.
 
 ### Security
 
@@ -147,25 +92,25 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 | Variable | Default | Description |
 |---|---|---|
 | `AICHAT_DB_HOST` | `localhost` | PostgreSQL host |
-| `AICHAT_DB_PORT` | `5437` | PostgreSQL port |
+| `AICHAT_DB_PORT` | `5437` | PostgreSQL port (local dev); `5432` inside Docker Compose network |
 | `AICHAT_DB_NAME` | `ai_chat` | Database name |
 | `AICHAT_DB_USERNAME` | `ai_chat` | DB user |
 | `AICHAT_DB_PASSWORD` | `ai_chat` | DB password |
-| `CHAT_BASE_URL` | `http://localhost:11434/v1` | Primary chat model endpoint (must include `/v1` for Ollama) |
-| `CHAT_API_KEY` | `none` | API key for chat model (Ollama doesn't require one) |
-| `CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model name |
-| `CHAT_ALT_BASE_URL` | `http://localhost:11434/v1` | Alternative chat model endpoint |
-| `CHAT_ALT_API_KEY` | `none` | API key for alt model |
-| `CHAT_ALT_MODEL` | `gemma4:12b` | Alternative chat model name |
-| `TOOL_CALLING_BASE_URL` | `http://localhost:11434/v1` | Tool-calling model endpoint |
-| `TOOL_CALLING_API_KEY` | `none` | API key for tool-calling model |
-| `TOOL_CALLING_MODEL` | `functiongemma:270m` | Tool-calling model name |
-| `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (`medical-dataset` connection) |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama base URL (no `/v1` suffix — Spring AI Ollama provider) |
+| `OLLAMA_API_KEY` | `ollama` | API key placeholder for Ollama |
+| `OLLAMA_CHAT_MODEL` | `gemma3:4b` | Primary chat model |
+| `OLLAMA_CHAT_ALT_MODEL` | `gemma3:4b` | Alternative chat model |
+| `OLLAMA_TOOL_MODEL` | `gemma3:4b` | Tool-calling model |
+| `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (bootstrap seeder) |
 | `SERVER_PORT` | `8095` | Application port |
+| `SPRING_PROFILES_ACTIVE` | _(none)_ | Set to `prod` for production actuator defaults |
+| `MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS` | `never` | Override to `always` in dev for component details |
 
 ---
 
 ## Docker Compose
+
+See repository root `docker-compose.yml` (PostgreSQL + ai-chat). Ollama and MCP run on the host via `host.docker.internal`.
 
 ```yaml
 services:
@@ -175,23 +120,18 @@ services:
       - "8095:8095"
     environment:
       AICHAT_DB_HOST: postgres
+      AICHAT_DB_PORT: 5432
       AICHAT_DB_USERNAME: ai_chat
       AICHAT_DB_PASSWORD: ai_chat
-      CHAT_BASE_URL: http://host.docker.internal:11434/v1
-      CHAT_API_KEY: none
-      CHAT_MODEL: gemma4:31b-cloud
-      CHAT_ALT_BASE_URL: http://host.docker.internal:11434/v1
-      CHAT_ALT_API_KEY: none
-      CHAT_ALT_MODEL: gemma4:12b
-      TOOL_CALLING_BASE_URL: http://host.docker.internal:11434/v1
-      TOOL_CALLING_API_KEY: none
-      TOOL_CALLING_MODEL: functiongemma:270m
-      MCP_MEDICAL_URL: http://host.docker.internal:8092/sse
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_API_KEY: ollama
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-gemma3:4b}
+      MCP_MEDICAL_URL: ${MCP_MEDICAL_URL:-http://host.docker.internal:8092/sse}
     depends_on:
       postgres:
         condition: service_healthy
     extra_hosts:
-      - host.docker.internal:host-gateway
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8095/actuator/health"]
       interval: 30s

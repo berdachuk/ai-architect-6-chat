@@ -226,18 +226,29 @@ jobs:
 
 ## 7. Manual smoke checklist (M9)
 
-- [ ] App starts on `:8095`, health endpoint returns UP
-- [ ] Open `http://localhost:8095/` → redirected to default chat
-- [ ] Sidebar shows "New Chat" (default)
+Automated REST coverage: `SmokeChecklistIntegrationTest` and `scripts/smoke-rest.sh` (against a running instance).
+
+| Check | Automated | Notes |
+|---|---|---|
+| App starts, health UP | ✅ IT + `smoke-rest.sh` | `GET /actuator/health` |
+| Home → default chat | ✅ IT | `GET /` |
+| Sidebar "New Chat" | ✅ IT | HTML assertion |
+| Stream without MCP | ✅ IT | Stub LLM in test profile |
+| Stream token-by-token | manual | Requires Ollama |
+| Agent panel activity | manual | Browser + MCP tools |
+| Create / switch / delete chat | ✅ IT | REST CRUD |
+| MCP tools (list specialties, search cases) | manual | Requires ai-architect-6-mcp + Ollama |
+
+Manual steps (browser + live Ollama/MCP):
+
 - [ ] Type message with **no MCP server running** → streaming LLM response still works
 - [ ] Type message → streaming response appears token-by-token
 - [ ] Agent panel shows activity entries (if MCP tools called)
-- [ ] Create new chat → appears in sidebar
-- [ ] Switch between chats → history loads correctly
-- [ ] Delete chat → removed from sidebar, default recreated if last
-- [ ] ai-architect-6-mcp (`medical-mcp-server`) connected → tools available in chat
-- [ ] Ask "list medical specialties" → LLM calls `list_specialties` MCP tool → response includes specialties
-- [ ] Ask "search for cardiovascular cases" → LLM calls `search_cases` MCP tool → response includes cases
+- [ ] ai-architect-6-mcp connected → tools available in chat
+- [ ] Ask "list medical specialties" → `list_specialties` tool called
+- [ ] Ask "search for cardiovascular cases" → `search_cases` tool called
+
+**CLI smoke (running app):** `bash scripts/smoke-rest.sh http://localhost:8095`
 
 ---
 

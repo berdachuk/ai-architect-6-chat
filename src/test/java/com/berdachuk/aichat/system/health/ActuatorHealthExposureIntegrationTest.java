@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
@@ -17,9 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
 @Testcontainers
-class ActuatorHealthIntegrationTest {
+class ActuatorHealthExposureIntegrationTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17")
@@ -33,13 +31,15 @@ class ActuatorHealthIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("ai-chat.mcp.bootstrap.enabled", () -> false);
+        registry.add("management.endpoint.health.show-details", () -> "never");
+        registry.add("management.endpoint.health.show-components", () -> "never");
     }
 
     @LocalServerPort
     private int port;
 
     @Test
-    void healthEndpointIsPublicAndReportsMcpComponent() {
+    void healthEndpointHidesComponentDetailsByDefault() {
         String body = RestClient.create()
                 .get()
                 .uri("http://localhost:" + port + "/actuator/health")
@@ -47,6 +47,7 @@ class ActuatorHealthIntegrationTest {
                 .body(String.class);
 
         assertThat(body).contains("\"status\":\"UP\"");
-        assertThat(body).contains("mcpConnection");
+        assertThat(body).doesNotContain("mcpConnection");
+        assertThat(body).doesNotContain("components");
     }
 }

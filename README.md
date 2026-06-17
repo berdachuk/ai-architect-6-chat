@@ -6,7 +6,7 @@ General-purpose AI chat with multi-session history, long-dialog memory, optional
 
 Built on the chat patterns from [med-expert-match-ce](https://github.com/berdachuk/med-expert-match-ce) — without graph databases, medical domain logic, or evaluation frameworks. Connects to [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp) for MCP tool enrichment (phase 2).
 
-**Version:** 1.0.0-SNAPSHOT · **Status:** `develop` — M1–M9 complete
+**Version:** 1.0.0 · **Status:** `develop` — M1–M9 complete, v1.0.0 release hardening
 
 ---
 

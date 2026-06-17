@@ -38,3 +38,9 @@ ai-chat:
   mcp:
     bootstrap:
       enabled: false
+
+management:
+  endpoint:
+    health:
+      show-details: always
+      show-components: always

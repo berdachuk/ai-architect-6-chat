@@ -13,7 +13,7 @@
 
     <groupId>com.berdachuk</groupId>
     <artifactId>ai-chat</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>ai-chat</name>
     <description>General-purpose AI chat with optional MCP enrichment</description>
 

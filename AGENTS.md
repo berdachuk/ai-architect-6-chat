@@ -1,6 +1,6 @@
 # AGENTS.md — ai-architect-6-chat (`ai-chat`)
 
-General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **M9 implemented** — Docker packaging, CI, MCP health actuator. All milestones M1–M9 complete per [docs/01-requirements.md](docs/01-requirements.md).
+General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **v1.0.0** — all milestones M1–M9 complete; release hardening per [docs/01-requirements.md](docs/01-requirements.md).
 
 **Stack:** Java 21 · Spring Boot 4.1 · Spring AI 2.0 · Spring Modulith · PostgreSQL 17 · Thymeleaf SSR · Ollama (OpenAI-compatible client)
 

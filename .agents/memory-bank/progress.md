@@ -71,3 +71,12 @@
 - Tests: `McpConnectionHealthIndicatorTest`, `ActuatorHealthIntegrationTest`
 - **Plan:** M-10 archived; M-11 active for release/maintenance
 
+## 2026-06-17 — M-11 Release hardening (v1.0.0)
+
+- Actuator `show-details: never` by default; `application-prod.yml` + test profile overrides
+- `SecurityConfig` — lock down non-public endpoints (`.authenticated()`)
+- `SmokeChecklistIntegrationTest` + `scripts/smoke-rest.sh`
+- `docs/05-deployment.md` aligned with `OLLAMA_*` env vars
+- Version `1.0.0`; git tag `v1.0.0`
+- **Plan:** M-11 archived; M-12 active for ongoing maintenance
+

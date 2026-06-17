@@ -32,7 +32,7 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info")
                         .permitAll()
-                        .anyRequest().permitAll())
+                        .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
     }

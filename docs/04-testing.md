@@ -234,7 +234,7 @@ Automated REST coverage: `SmokeChecklistIntegrationTest` and `scripts/smoke-rest
 | Home → default chat | ✅ IT | `GET /` |
 | Sidebar "New Chat" | ✅ IT | HTML assertion |
 | Stream without MCP | ✅ IT | Stub LLM in test profile |
-| Stream token-by-token | manual | Requires Ollama |
+| Stream token-by-token | ✅ Playwright (`e2e` profile) | Stub LLM in Docker CI |
 | Agent panel activity | manual | Browser + MCP tools |
 | Create / switch / delete chat | ✅ IT | REST CRUD |
 | MCP tools (list specialties, search cases) | manual | Requires ai-architect-6-mcp + Ollama |

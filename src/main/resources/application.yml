@@ -74,6 +74,7 @@ ai-chat:
     mcp-client: true
   security:
     oauth2-enabled: false
+    oauth2-login-enabled: false
     jwt-user-claim: sub
   mcp:
     bootstrap:

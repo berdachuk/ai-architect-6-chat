@@ -41,6 +41,7 @@ ai-chat:
 
   security:
     oauth2-enabled: false
+    oauth2-login-enabled: false
 
 management:
   endpoint:

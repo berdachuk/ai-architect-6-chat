@@ -12,8 +12,10 @@ window.AiChat.escapeHtml = function escapeHtml(text) {
 };
 
 window.AiChat.apiHeaders = function apiHeaders(userId) {
-    return {
-        'X-User-Id': userId,
-        'Content-Type': 'application/json'
-    };
+    const headers = { 'Content-Type': 'application/json' };
+    const config = window.AICHAT_CONFIG || {};
+    if (!config.oauth2LoginEnabled) {
+        headers['X-User-Id'] = userId;
+    }
+    return headers;
 };

@@ -79,6 +79,10 @@ scrape_configs:
 
 Run with `SPRING_PROFILES_ACTIVE=prod` so the Prometheus endpoint is exposed.
 
+**Alerting:** example rules in [observability/prometheus/alerts.yml](../observability/prometheus/alerts.yml).
+
+**Browser OIDC login:** `SPRING_PROFILES_ACTIVE=oauth2-login` with `OAUTH2_CLIENT_ID`, `OAUTH2_CLIENT_SECRET`, `OAUTH2_ISSUER_URI` — see `application-oauth2-login.yml`. Web UI omits `X-User-Id` when login is enabled.
+
 ### User identity and OAuth2 (optional)
 
 **Default (no OAuth2):** `ai-chat.security.oauth2-enabled: false` — all endpoints are open. User id comes from the `X-User-Id` header or `aichat-user-id` cookie (fallback `anonymous`). Use this for local dev and automated tests.

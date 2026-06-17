@@ -1,6 +1,6 @@
 # AGENTS.md — ai-architect-6-chat (`ai-chat`)
 
-General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **v1.0.0** — M13: Playwright E2E in CI, Grafana dashboard. Next: [M-14 plan](.agents/plans/M-14-production-hardening.md).
+General-purpose AI chat: multi-session history, SSE streaming, Harness progress, optional MCP enrichment. **v1.0.0** — M14: OIDC login profile, e2e stub streaming, Prometheus alerts, LICENSE. Next: [M-15 plan](.agents/plans/M-15-maintenance-backlog.md).
 
 **Stack:** Java 21 · Spring Boot 4.1 · Spring AI 2.0 · Spring Modulith · PostgreSQL 17 · Thymeleaf SSR · Ollama (OpenAI-compatible client)
 

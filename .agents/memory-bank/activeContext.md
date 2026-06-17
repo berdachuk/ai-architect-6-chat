@@ -4,16 +4,13 @@
 
 ## Current focus
 
-**M-13 complete.** Playwright E2E in CI, Grafana dashboard JSON. Next: [M-14-production-hardening.md](../plans/M-14-production-hardening.md).
+**M-14 complete.** OIDC login profile, e2e stub LLM streaming, Prometheus alerts, LICENSE/RELEASE. Next: [M-15-maintenance-backlog.md](../plans/M-15-maintenance-backlog.md).
 
 ## In progress
 
-- [x] M1–M9 complete
-- [x] M-11 release hardening
-- [x] M-12 OAuth2 (default off), user guide, Prometheus
-- [x] M-13 Playwright E2E + Grafana dashboard + CI e2e job
+- [x] M1–M9, M-11–M-14 complete
 
 ## Next steps (optional)
 
-1. OIDC browser login for production
-2. Playwright streaming tests with stub LLM in Docker
+1. Alertmanager deployment example
+2. Playwright MCP panel tests

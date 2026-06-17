@@ -1,5 +1,6 @@
 package com.berdachuk.aichat.llm.support;
 
+import com.berdachuk.aichat.llm.stub.StubChatModel;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;

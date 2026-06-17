@@ -96,3 +96,11 @@
 - `docker-compose.e2e.yml` disables MCP bootstrap for CI
 - **Plan:** M-13 archived; M-14 active for production hardening
 
+## 2026-06-17 — M-14 Production hardening
+
+- `oauth2-login` profile + `UserContext` OIDC principal; web UI skips `X-User-Id` when enabled
+- `e2e` profile stub LLM + Playwright `chat-stream.spec.ts`
+- Prometheus alert rules, MIT LICENSE, RELEASE.md
+- README sync
+- **Plan:** M-14 archived; M-15 active
+

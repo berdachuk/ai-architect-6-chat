@@ -4,15 +4,15 @@
 
 ## Current focus
 
-**M4 complete.** Next: **M5** — Harness workflow engine per [M-06-m5-harness-engine.md](../plans/M-06-m5-harness-engine.md).
+**M5 complete.** Next: **M6** — Thymeleaf chat UI per [M-07-m6-thymeleaf-ui.md](../plans/M-07-m6-thymeleaf-ui.md).
 
 ## In progress
 
-- [x] M1–M4 complete
-- [ ] M5: Harness engine, activity SSE publisher
+- [x] M1–M5 complete
+- [ ] M6: Thymeleaf SSR, chat.js, agent panel
 
 ## Next steps
 
-1. `ChatWorkflowEngine` + `ChatStreamActivityPublisher`
-2. Wire harness into `ChatAssistantService.streamMessage`
-3. IT for `activity` / `pipeline_stage` SSE events
+1. `web/` module with `ChatPageController` + `chat.html`
+2. SSE client for stream + harness events
+3. Sidebar session CRUD UX

@@ -52,5 +52,14 @@ class FlywaySchemaIntegrationTest {
                 """,
                 Integer.class);
         assertThat(sessionTables).isEqualTo(2);
+
+        Integer harnessTables = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*) FROM information_schema.tables
+                WHERE table_schema = 'ai_chat'
+                  AND table_name IN ('harness_workflow_run', 'harness_chain_trace')
+                """,
+                Integer.class);
+        assertThat(harnessTables).isEqualTo(2);
     }
 }

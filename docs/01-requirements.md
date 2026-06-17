@@ -851,7 +851,7 @@ ai-chat:
 | M2 | Chat session CRUD | `ChatRepository`, `ChatService`, `ChatController` REST | Create/list/rename/delete/history; default chat auto-created | ✅ |
 | M3 | LLM integration | `SpringAIConfig`, `OpenAiChatModelFactory`, `ChatAssistantService`, SSE `token`/`done` | Stream response from Ollama; **works with MCP disabled** | ✅ |
 | M4 | Session memory | Session JDBC, compaction, `SessionMemoryAdvisor`, `DateTimeContextAdvisor` | 20+ turn dialog retains context; compaction fires at threshold | ✅ |
-| M5 | Harness engine | `ChatWorkflowEngine`, planner/verifier/policy, `ChatStreamActivityPublisher` | Agent panel shows `pipeline_stage` + `activity` events | ⬜ |
+| M5 | Harness engine | `ChatWorkflowEngine`, planner/verifier/policy, `ChatStreamActivityPublisher` | Agent panel shows `pipeline_stage` + `activity` events | ✅ |
 | M6 | Frontend | `chat.html`, `chat.js`, sidebar, composer, agent panel | Full chat UX in browser; session switch/delete works | ⬜ |
 
 ### Phase 2 — MCP enrichment

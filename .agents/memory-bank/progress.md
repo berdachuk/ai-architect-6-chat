@@ -32,3 +32,10 @@
 - Session ID `{userId}-{chatId}`; default DB port `5437`
 - **Plan:** M-05 archived; M-06 active for M5 harness
 
+## 2026-06-17 — M5 Harness workflow engine
+
+- `ChatWorkflowEngine`, `ChatStreamActivityPublisher`, stub planner/verifier/policy
+- Flyway `V3__init_harness_schema.sql`, JDBC run/trace stores
+- SSE `agent`, `pipeline_stage`, `activity` on stream endpoint
+- **Plan:** M-06 archived; M-07 active for M6 Thymeleaf UI
+

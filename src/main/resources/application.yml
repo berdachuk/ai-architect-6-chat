@@ -55,3 +55,10 @@ spring:
 
 server:
   port: ${SERVER_PORT:8095}
+
+ai-chat:
+  harness:
+    max-iterations: 2
+    retry-on-verify-fail: true
+    policy-gate-enabled: true
+    human-checkpoint-enabled: false

@@ -85,7 +85,7 @@
 - Optional OAuth2/JWT (`application-oauth2.yml`); default `oauth2-enabled: false` for open dev testing
 - `docs/user-guide.md` end-user documentation
 - Prometheus `/actuator/prometheus` in `prod` profile
-- README aligned with `OLLAMA_*` defaults (`gemma3:4b`)
+- README aligned with `OLLAMA_*` defaults (`gemma4:31b-cloud`)
 - **Plan:** M-12 archived; M-13 active for E2E and Grafana
 
 ## 2026-06-17 — M-13 E2E and observability

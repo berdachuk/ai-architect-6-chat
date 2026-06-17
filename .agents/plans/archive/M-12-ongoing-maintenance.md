@@ -13,7 +13,7 @@ Track optional improvements after initial release.
 - [x] OAuth2/JWT optional profile (`oauth2`); default remains open dev identity (`X-User-Id`)
 - [x] User guide (`docs/user-guide.md`)
 - [x] Prometheus metrics endpoint in `prod` profile (`/actuator/prometheus`)
-- [x] Align README model names with `application.yml` (`OLLAMA_*` / `gemma3:4b`)
+- [x] Align README model names with `application.yml` (`OLLAMA_*` / `gemma4:31b-cloud`)
 
 ## Deferred to M-13
 

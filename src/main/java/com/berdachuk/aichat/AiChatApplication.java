@@ -8,7 +8,10 @@ import org.springframework.boot.web.server.context.WebServerInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.Environment;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication
+@EnableScheduling
 public class AiChatApplication implements ApplicationListener<WebServerInitializedEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(AiChatApplication.class);

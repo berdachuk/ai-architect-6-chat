@@ -23,15 +23,15 @@ spring:
     custom:
       chat:
         provider: ollama
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        api-key: ${OLLAMA_API_KEY:ollama}
-        model: ${OLLAMA_CHAT_MODEL:gemma4:31b-cloud}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_CHAT_MODEL:gemma4:31b-cloud}
       chat-alt:
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        model: ${OLLAMA_CHAT_ALT_MODEL:gemma4:31b-cloud}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        model: ${AICHAT_CHAT_ALT_MODEL:gemma4:31b-cloud}
       tool-calling:
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        model: ${OLLAMA_TOOL_MODEL:gemma4:31b-cloud}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        model: ${AICHAT_TOOL_MODEL:gemma4:31b-cloud}
 
 server:
   port: ${SERVER_PORT:8095}
@@ -133,11 +133,11 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 | `AICHAT_DB_NAME` | `ai_chat` | Database name |
 | `AICHAT_DB_USERNAME` | `ai_chat` | DB user |
 | `AICHAT_DB_PASSWORD` | `ai_chat` | DB password |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama base URL (no `/v1` suffix — Spring AI Ollama provider) |
-| `OLLAMA_API_KEY` | `ollama` | API key placeholder for Ollama |
-| `OLLAMA_CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model |
-| `OLLAMA_CHAT_ALT_MODEL` | `gemma4:31b-cloud` | Alternative chat model |
-| `OLLAMA_TOOL_MODEL` | `gemma4:31b-cloud` | Tool-calling model |
+| `AICHAT_CHAT_BASE_URL` | `http://localhost:11434` | Ollama base URL (no `/v1` suffix — Spring AI Ollama provider) |
+| `AICHAT_CHAT_API_KEY` | `ollama` | API key placeholder for Ollama |
+| `AICHAT_CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model |
+| `AICHAT_CHAT_ALT_MODEL` | `gemma4:31b-cloud` | Alternative chat model |
+| `AICHAT_TOOL_MODEL` | `gemma4:31b-cloud` | Tool-calling model |
 | `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (bootstrap seeder) |
 | `SERVER_PORT` | `8095` | Application port |
 | `SPRING_PROFILES_ACTIVE` | _(none)_ | Set to `prod` for production actuator defaults |
@@ -160,9 +160,9 @@ services:
       AICHAT_DB_PORT: 5432
       AICHAT_DB_USERNAME: ai_chat
       AICHAT_DB_PASSWORD: ai_chat
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
-      OLLAMA_API_KEY: ollama
-      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-gemma4:31b-cloud}
+      AICHAT_CHAT_BASE_URL: http://host.docker.internal:11434
+      AICHAT_CHAT_API_KEY: ollama
+      AICHAT_CHAT_MODEL: ${AICHAT_CHAT_MODEL:-gemma4:31b-cloud}
       MCP_MEDICAL_URL: ${MCP_MEDICAL_URL:-http://host.docker.internal:8092/sse}
     depends_on:
       postgres:

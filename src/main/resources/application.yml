@@ -25,23 +25,23 @@ spring:
     custom:
       chat:
         provider: ollama
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        api-key: ${OLLAMA_API_KEY:ollama}
-        model: ${OLLAMA_CHAT_MODEL:gemma4:31b-cloud}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_CHAT_MODEL:gemma4:31b-cloud}
         temperature: 0.7
         max-tokens: 4096
       chat-alt:
         provider: ollama
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        api-key: ${OLLAMA_API_KEY:ollama}
-        model: ${OLLAMA_CHAT_ALT_MODEL:gemma4:31b-cloud}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_CHAT_ALT_MODEL:gemma4:31b-cloud}
         temperature: 0.7
         max-tokens: 4096
       tool-calling:
         provider: ollama
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        api-key: ${OLLAMA_API_KEY:ollama}
-        model: ${OLLAMA_TOOL_MODEL:gemma4:31b-cloud}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_TOOL_MODEL:gemma4:31b-cloud}
         temperature: 0.3
         max-tokens: 4096
     session:

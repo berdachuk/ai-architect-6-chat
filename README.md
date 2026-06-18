@@ -39,7 +39,7 @@ Built on patterns from [med-expert-match-ce](https://github.com/berdachuk/med-ex
 | **Harness workflow**    | `ChatWorkflowEngine` — planning, tool execution, verification, policy gate                         |
 | **Agent progress UI**   | SSE events: `activity`, `pipeline_stage`, `agent`, `tool_call`                                     |
 | **MCP client**          | Runtime catalog (`POST /api/v1/mcp/connections`); per-chat toggles; graceful degradation when down |
-| **Multi-role LLM**      | `OLLAMA_CHAT_MODEL`, `OLLAMA_CHAT_ALT_MODEL`, `OLLAMA_TOOL_MODEL` (default `gemma4:31b-cloud`)            |
+| **Multi-role LLM**      | `AICHAT_CHAT_MODEL`, `AICHAT_CHAT_ALT_MODEL`, `AICHAT_TOOL_MODEL` (default `gemma4:31b-cloud`)            |
 | **Security**            | Open by default (`ai-chat.security.oauth2-enabled: false`); optional JWT via `oauth2` profile      |
 | **Observability**       | Actuator health (MCP indicator in test profile); Prometheus + Grafana dashboard in `prod`          |
 | **CI**                  | `mvn test`, `mvn verify -Pintegration`, Playwright E2E against Docker Compose                      |
@@ -67,7 +67,7 @@ Browser (Thymeleaf + chat.js)
         ▼
    ai-chat :8095
         ├── PostgreSQL 17  (chat, message, mcp_connection, ai_session)
-        ├── Ollama         (default gemma4:31b-cloud — OLLAMA_* env vars)
+        ├── Ollama         (default gemma4:31b-cloud — AICHAT_* env vars)
         └── MCP server(s)  (optional — e.g. ai-architect-6-mcp :8092/sse)
 ```
 
@@ -99,15 +99,15 @@ Defaults match `src/main/resources/application.yml`.
 
 | Role                | Env var                 | Default                  | Purpose                       |
 |---------------------|-------------------------|--------------------------|-------------------------------|
-| All roles base URL  | `OLLAMA_BASE_URL`       | `http://localhost:11434` | Ollama host (no `/v1` suffix) |
-| API key placeholder | `OLLAMA_API_KEY`        | `ollama`                 | Passed to Spring AI client    |
-| Primary chat        | `OLLAMA_CHAT_MODEL`     | `gemma4:31b-cloud`       | Streaming responses           |
-| Alternative chat    | `OLLAMA_CHAT_ALT_MODEL` | `gemma4:31b-cloud`       | Fallback model                |
-| Tool calling        | `OLLAMA_TOOL_MODEL`     | `gemma4:31b-cloud`       | MCP tool invocation           |
+| All roles base URL  | `AICHAT_CHAT_BASE_URL`       | `http://localhost:11434` | Ollama host (no `/v1` suffix) |
+| API key placeholder | `AICHAT_CHAT_API_KEY`        | `ollama`                 | Passed to Spring AI client    |
+| Primary chat        | `AICHAT_CHAT_MODEL`     | `gemma4:31b-cloud`       | Streaming responses           |
+| Alternative chat    | `AICHAT_CHAT_ALT_MODEL` | `gemma4:31b-cloud`       | Fallback model                |
+| Tool calling        | `AICHAT_TOOL_MODEL`     | `gemma4:31b-cloud`       | MCP tool invocation           |
 
 ```bash
 ollama pull gemma4:31b-cloud
-# optional: export OLLAMA_CHAT_MODEL=gemma4:31b-cloud
+# optional: export AICHAT_CHAT_MODEL=gemma4:31b-cloud
 ```
 
 ---

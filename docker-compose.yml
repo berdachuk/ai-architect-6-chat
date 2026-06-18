@@ -8,11 +8,11 @@ services:
       AICHAT_DB_PORT: 5432
       AICHAT_DB_USERNAME: ai_chat
       AICHAT_DB_PASSWORD: ai_chat
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
-      OLLAMA_API_KEY: ollama
-      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-gemma4:31b-cloud}
-      OLLAMA_CHAT_ALT_MODEL: ${OLLAMA_CHAT_ALT_MODEL:-gemma4:31b-cloud}
-      OLLAMA_TOOL_MODEL: ${OLLAMA_TOOL_MODEL:-gemma4:31b-cloud}
+      AICHAT_CHAT_BASE_URL: http://host.docker.internal:11434
+      AICHAT_CHAT_API_KEY: ollama
+      AICHAT_CHAT_MODEL: ${AICHAT_CHAT_MODEL:-gemma4:31b-cloud}
+      AICHAT_CHAT_ALT_MODEL: ${AICHAT_CHAT_ALT_MODEL:-gemma4:31b-cloud}
+      AICHAT_TOOL_MODEL: ${AICHAT_TOOL_MODEL:-gemma4:31b-cloud}
       MCP_MEDICAL_URL: ${MCP_MEDICAL_URL:-http://host.docker.internal:8092/sse}
     depends_on:
       postgres:

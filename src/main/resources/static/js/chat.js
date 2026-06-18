@@ -53,10 +53,15 @@
             const checked = enabledMcpConnections.has(connection.id) ? ' checked' : '';
             const disabled = isUp ? '' : ' disabled';
             const statusClass = isUp ? 'mcp-status-up' : 'mcp-status-down';
+            const toolCount = connection.toolCount > 0 ? connection.toolCount + ' tools' : 'no tools';
+            const hint = isUp
+                ? connection.name + ' — available (' + toolCount + ')'
+                : connection.name + ' — unavailable';
             return `
                 <label class="mcp-connection-item ${statusClass}">
                     <input type="checkbox" class="mcp-toggle"
-                           data-connection-id="${connection.id}"${checked}${disabled}>
+                           data-connection-id="${connection.id}"${checked}${disabled}
+                           title="${escapeHtml(hint)}">
                     <span class="mcp-connection-name">${escapeHtml(connection.name)}</span>
                 </label>`;
         }).join('');

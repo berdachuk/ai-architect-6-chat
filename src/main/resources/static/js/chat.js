@@ -44,22 +44,18 @@
     function renderMcpConnections(connections) {
         const listEl = document.getElementById('mcpConnectionList');
         if (!connections || connections.length === 0) {
-            listEl.innerHTML = '<div class="text-muted">No MCP connections configured.</div>';
+            listEl.innerHTML = '<span class="text-muted">none</span>';
             return;
         }
 
         listEl.innerHTML = connections.map(function (connection) {
             const checked = enabledMcpConnections.has(connection.id) ? ' checked' : '';
             const statusClass = connection.status === 'UP' ? 'mcp-status-up' : 'mcp-status-down';
-            const toolLabel = connection.toolCount > 0 ? connection.toolCount + ' tools' : 'no tools';
             return `
-                <label class="mcp-connection-item">
-                    <input type="checkbox" class="form-check-input mt-1 mcp-toggle"
+                <label class="mcp-connection-item ${statusClass}">
+                    <input type="checkbox" class="mcp-toggle"
                            data-connection-id="${connection.id}"${checked}>
-                    <span class="mcp-connection-meta">
-                        <span class="mcp-connection-name">${escapeHtml(connection.name)}</span>
-                        <div class="${statusClass}">${connection.status} · ${toolLabel}</div>
-                    </span>
+                    <span class="mcp-connection-name">${escapeHtml(connection.name)}</span>
                 </label>`;
         }).join('');
 

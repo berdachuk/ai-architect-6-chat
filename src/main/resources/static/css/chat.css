@@ -390,31 +390,42 @@ body > .container-fluid,
     overflow-y: auto;
 }
 
+.mcp-bar {
+    background: #f8f9fa;
+    flex-shrink: 0;
+}
+
 .mcp-connection-list {
-    max-height: 160px;
-    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .mcp-connection-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.35rem;
-    padding: 0.35rem 0;
-    border-bottom: 1px solid #e9ecef;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.25rem;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    font-size: 0.8rem;
+    white-space: nowrap;
 }
 
-.mcp-connection-item:last-child {
-    border-bottom: none;
+.mcp-connection-item input[type="checkbox"] {
+    margin: 0;
+    width: 0.85rem;
+    height: 0.85rem;
 }
 
 .mcp-connection-meta {
-    flex: 1;
-    min-width: 0;
+    display: inline;
 }
 
 .mcp-connection-name {
     font-weight: 500;
-    line-height: 1.2;
 }
 
 .mcp-status-up {

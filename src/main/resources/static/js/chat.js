@@ -49,12 +49,14 @@
         }
 
         listEl.innerHTML = connections.map(function (connection) {
+            const isUp = connection.status === 'UP';
             const checked = enabledMcpConnections.has(connection.id) ? ' checked' : '';
-            const statusClass = connection.status === 'UP' ? 'mcp-status-up' : 'mcp-status-down';
+            const disabled = isUp ? '' : ' disabled';
+            const statusClass = isUp ? 'mcp-status-up' : 'mcp-status-down';
             return `
                 <label class="mcp-connection-item ${statusClass}">
                     <input type="checkbox" class="mcp-toggle"
-                           data-connection-id="${connection.id}"${checked}>
+                           data-connection-id="${connection.id}"${checked}${disabled}>
                     <span class="mcp-connection-name">${escapeHtml(connection.name)}</span>
                 </label>`;
         }).join('');

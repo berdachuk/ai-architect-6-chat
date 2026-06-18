@@ -50,7 +50,7 @@ public class LlmChatClientConfiguration {
     ToolCallingAdvisor toolCallingAdvisor(ToolCallingManager toolCallingManager) {
         return ToolCallingAdvisor.builder()
                 .toolCallingManager(toolCallingManager)
-                .conversationHistoryEnabled(false)
+                .conversationHistoryEnabled(true)
                 .build();
     }
 }

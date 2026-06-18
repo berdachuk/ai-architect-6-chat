@@ -136,8 +136,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 | `AICHAT_CHAT_BASE_URL` | `http://localhost:11434` | Ollama base URL (no `/v1` suffix — Spring AI Ollama provider) |
 | `AICHAT_CHAT_API_KEY` | `ollama` | API key placeholder for Ollama |
 | `AICHAT_CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model |
-| `AICHAT_CHAT_ALT_MODEL` | `gemma4:31b-cloud` | Alternative chat model |
-| `AICHAT_TOOL_MODEL` | `gemma4:31b-cloud` | Tool-calling model |
+| `AICHAT_TOOL_MODEL` | `functiongemma:270m` | Tool-calling model |
 | `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (bootstrap seeder) |
 | `SERVER_PORT` | `8095` | Application port |
 | `SPRING_PROFILES_ACTIVE` | _(none)_ | Set to `prod` for production actuator defaults |

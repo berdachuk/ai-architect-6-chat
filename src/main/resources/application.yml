@@ -34,7 +34,7 @@ spring:
         provider: ollama
         base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
         api-key: ${AICHAT_CHAT_API_KEY:ollama}
-        model: ${AICHAT_TOOL_MODEL:gemma4:31b-cloud}
+        model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
         temperature: 0.3
         max-tokens: 4096
     session:

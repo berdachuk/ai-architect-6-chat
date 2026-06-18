@@ -478,8 +478,8 @@ spring:
         max-tokens: 6000
       tool-calling:
         provider: openai
-        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
-        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        base-url: ${AICHAT_TOOL_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_TOOL_API_KEY:ollama}
         model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
         temperature: 0.1
         max-tokens: 2048
@@ -750,8 +750,8 @@ spring:
         max-tokens: 6000
       tool-calling:
         provider: openai
-        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
-        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        base-url: ${AICHAT_TOOL_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_TOOL_API_KEY:ollama}
         model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
         temperature: 0.1
         max-tokens: 2048
@@ -814,6 +814,8 @@ ai-chat:
 | `AICHAT_CHAT_BASE_URL` | `http://localhost:11434` | Primary chat model endpoint |
 | `AICHAT_CHAT_API_KEY` | `ollama` | API key for chat model |
 | `AICHAT_CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model name |
+| `AICHAT_TOOL_BASE_URL` | `http://localhost:11434` | Tool-calling model endpoint |
+| `AICHAT_TOOL_API_KEY` | `ollama` | API key for tool-calling model |
 | `AICHAT_TOOL_MODEL` | `functiongemma:270m` | Tool-calling model name |
 | `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (`medical-dataset` connection) |
 | `SERVER_PORT` | `8095` | Application port |
@@ -863,6 +865,8 @@ services:
       AICHAT_CHAT_BASE_URL: http://host.docker.internal:11434
       AICHAT_CHAT_API_KEY: ollama
       AICHAT_CHAT_MODEL: gemma4:31b-cloud
+      AICHAT_TOOL_BASE_URL: http://host.docker.internal:11434
+      AICHAT_TOOL_API_KEY: ollama
       AICHAT_TOOL_MODEL: functiongemma:270m
       MCP_MEDICAL_URL: http://host.docker.internal:8092/sse
     depends_on:

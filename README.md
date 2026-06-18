@@ -99,10 +99,12 @@ Defaults match `src/main/resources/application.yml`.
 
 | Role                | Env var                 | Default                  | Purpose                       |
 |---------------------|-------------------------|--------------------------|-------------------------------|
-| All roles base URL  | `AICHAT_CHAT_BASE_URL`       | `http://localhost:11434` | Ollama host (no `/v1` suffix) |
-| API key placeholder | `AICHAT_CHAT_API_KEY`        | `ollama`                 | Passed to Spring AI client    |
+| Chat base URL       | `AICHAT_CHAT_BASE_URL`  | `http://localhost:11434` | Chat model endpoint           |
+| Chat API key        | `AICHAT_CHAT_API_KEY`   | `ollama`                 | Chat model API key            |
 | Primary chat        | `AICHAT_CHAT_MODEL`     | `gemma4:31b-cloud`       | Streaming responses           |
-| Tool calling        | `AICHAT_TOOL_MODEL`     | `functiongemma:270m`    | MCP tool invocation           |
+| Tool base URL       | `AICHAT_TOOL_BASE_URL`  | `http://localhost:11434` | Tool-calling model endpoint   |
+| Tool API key        | `AICHAT_TOOL_API_KEY`   | `ollama`                 | Tool-calling model API key    |
+| Tool calling        | `AICHAT_TOOL_MODEL`     | `functiongemma:270m`     | MCP tool invocation           |
 
 ```bash
 ollama pull gemma4:31b-cloud

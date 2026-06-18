@@ -32,8 +32,8 @@ spring:
         max-tokens: 4096
       tool-calling:
         provider: ollama
-        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
-        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        base-url: ${AICHAT_TOOL_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_TOOL_API_KEY:ollama}
         model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
         temperature: 0.3
         max-tokens: 4096

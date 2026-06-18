@@ -11,7 +11,7 @@ spring:
       chat:
         base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
       tool-calling:
-        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        base-url: ${AICHAT_TOOL_BASE_URL:http://localhost:11434}
     mcp:
       client:
         enabled: true

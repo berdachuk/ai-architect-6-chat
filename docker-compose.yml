@@ -11,6 +11,8 @@ services:
       AICHAT_CHAT_BASE_URL: http://host.docker.internal:11434
       AICHAT_CHAT_API_KEY: ollama
       AICHAT_CHAT_MODEL: ${AICHAT_CHAT_MODEL:-gemma4:31b-cloud}
+      AICHAT_TOOL_BASE_URL: ${AICHAT_TOOL_BASE_URL:-http://host.docker.internal:11434}
+      AICHAT_TOOL_API_KEY: ${AICHAT_TOOL_API_KEY:-ollama}
       AICHAT_TOOL_MODEL: ${AICHAT_TOOL_MODEL:-functiongemma:270m}
       MCP_MEDICAL_URL: ${MCP_MEDICAL_URL:-http://host.docker.internal:8092/sse}
     depends_on:

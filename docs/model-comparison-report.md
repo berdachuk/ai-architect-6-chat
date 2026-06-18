@@ -24,6 +24,7 @@
 | **minimax-m3:cloud** | ~? | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Best overall. Recognized prompt as template, not tool. |
 | **gemma4:12b** | 12B | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Required hyphen→underscore fix in tool names. |
 | **gemma4:31b-cloud** | 31B | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Works after naming fixes. Previously failed due to tool naming bug. |
+| **gemma4:31b-cloud + functiongemma:270m** | 31B + 270M | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Split chat/tool models. `functiongemma:270m` handles tool calls efficiently. |
 | **qwen3.5:cloud** | ~? | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Cloud-hosted variant. Same quality as local qwen3.5:9b but with classification. |
 | **qwen3.5:9b** | 9B | ✅ All correct (step 3 used `semantic_search` instead) | ✅ Applied directly | ❌ No `PREDICTED_LABEL` | Good tool selection but doesn't follow prompt template structure for classification. |
 | **gemma4:e4b** | ~4B | ✅ All correct | ❌ Tried to invoke as tool | ❌ Same error | Smaller model. Ignores "prompt templates — not invocable tools" label. |

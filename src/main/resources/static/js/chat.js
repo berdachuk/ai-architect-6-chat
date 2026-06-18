@@ -31,6 +31,16 @@
             const catalog = await catalogResp.json();
             const selection = await selectionResp.json();
             enabledMcpConnections = new Set(selection.connectionIds || []);
+
+            if (enabledMcpConnections.size === 0) {
+                catalog.forEach(function (connection) {
+                    if (connection.status === 'UP') {
+                        enabledMcpConnections.add(connection.id);
+                        toggleMcpConnection(connection.id, true);
+                    }
+                });
+            }
+
             renderMcpConnections(catalog);
 
             const upCount = catalog.filter(function (item) { return item.status === 'UP'; }).length;

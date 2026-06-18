@@ -45,6 +45,8 @@ Built on patterns from [med-expert-match-ce](https://github.com/berdachuk/med-ex
 | **CI**                  | `mvn test`, `mvn verify -Pintegration`, Playwright E2E against Docker Compose                      |
 | **Spring Modulith**     | Package modules with `allowedDependencies`; `verify()` in CI                                       |
 
+![Chat UI screenshot](docs/screenshots/chat-ui.png)
+
 ---
 
 ## Architecture

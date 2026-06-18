@@ -26,12 +26,9 @@ spring:
         base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
         api-key: ${AICHAT_CHAT_API_KEY:ollama}
         model: ${AICHAT_CHAT_MODEL:gemma4:31b-cloud}
-      chat-alt:
-        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
-        model: ${AICHAT_CHAT_ALT_MODEL:gemma4:31b-cloud}
       tool-calling:
         base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
-        model: ${AICHAT_TOOL_MODEL:gemma4:31b-cloud}
+        model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
 
 server:
   port: ${SERVER_PORT:8095}

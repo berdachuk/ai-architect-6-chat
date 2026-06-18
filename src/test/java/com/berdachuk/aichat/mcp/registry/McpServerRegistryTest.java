@@ -54,7 +54,8 @@ class McpServerRegistryTest {
                 status == ServerStatus.DOWN ? "down" : null,
                 List.of(tool),
                 List.of(),
-                List.of());
+                List.of(),
+                null);
     }
 
     private static McpSchema.Tool tool(String name, String description) {

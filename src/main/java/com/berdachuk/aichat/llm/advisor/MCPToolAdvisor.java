@@ -70,20 +70,15 @@ public class MCPToolAdvisor implements BaseAdvisor {
         }
 
         ChatOptions options = updated.prompt().getOptions();
-        DefaultToolCallingChatOptions.Builder<?> toolOptions = DefaultToolCallingChatOptions.builder();
-        if (options != null) {
-            toolOptions.combineWith(options.mutate());
+        if (options instanceof ToolCallingChatOptions tcc) {
+            ToolCallingChatOptions.Builder<?> builder = tcc.mutate();
+            builder.toolCallbacks(ToolCallingChatOptions.mergeToolCallbacks(
+                    tcc.getToolCallbacks(), toolCallbacks));
+            return updated.mutate()
+                    .prompt(updated.prompt().mutate().chatOptions(builder.build()).build())
+                    .build();
         }
-        if (options instanceof ToolCallingChatOptions toolCallingChatOptions) {
-            toolOptions.toolCallbacks(ToolCallingChatOptions.mergeToolCallbacks(
-                    toolCallingChatOptions.getToolCallbacks(), toolCallbacks));
-        } else {
-            toolOptions.toolCallbacks(toolCallbacks);
-        }
-
-        return updated.mutate()
-                .prompt(updated.prompt().mutate().chatOptions(toolOptions.build()).build())
-                .build();
+        return updated;
     }
 
     @Override

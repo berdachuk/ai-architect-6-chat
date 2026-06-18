@@ -439,20 +439,19 @@ All LLM access uses the **Spring AI OpenAI-compatible client** — same pattern 
 **Default Ollama endpoints (all roles):**
 
 | Role | Env prefix | Default `base-url` | Default model |
-|---|---|---|---|
-| Chat (primary) | `CHAT_*` | `http://localhost:11434/v1` | `gemma4:31b-cloud` |
-| Chat (alt) | `CHAT_ALT_*` | `http://localhost:11434/v1` | `gemma4:12b` |
-| Tool calling | `TOOL_CALLING_*` | `http://localhost:11434/v1` | `functiongemma:270m` |
+|---|---|---|---|---|
+| Chat (primary) | `AICHAT_CHAT_*` | `http://localhost:11434` | `gemma4:31b-cloud` |
+| Tool calling | `AICHAT_TOOL_*` | `http://localhost:11434` | `functiongemma:270m` |
 
 Example — point chat at a cloud OpenAI-compatible API while keeping Ollama for tool calling:
 
 ```yaml
 # Override via environment (no code change)
-CHAT_BASE_URL=https://api.example.com/v1
-CHAT_API_KEY=sk-...
-CHAT_MODEL=gpt-4o
-TOOL_CALLING_BASE_URL=http://localhost:11434/v1   # still Ollama
-TOOL_CALLING_MODEL=functiongemma:270m
+AICHAT_CHAT_BASE_URL=https://api.example.com
+AICHAT_CHAT_API_KEY=sk-...
+AICHAT_CHAT_MODEL=gpt-4o
+AICHAT_TOOL_BASE_URL=http://localhost:11434   # still Ollama
+AICHAT_TOOL_MODEL=functiongemma:270m
 ```
 
 ### Multi-role architecture
@@ -460,10 +459,9 @@ TOOL_CALLING_MODEL=functiongemma:270m
 Same pattern as `med-expert-match-ce` — separate models for different roles:
 
 | Role | Default Model | Purpose | Config Prefix |
-|---|---|---|---|
-| **chat** (primary) | `gemma4:31b-cloud` | Main conversation, reasoning, structured output | `CHAT_*` |
-| **chat** (alternative) | `gemma4:12b` | Fallback for lighter queries | `CHAT_ALT_*` |
-| **tool-calling** | `functiongemma:270m` | Function calling, tool invocation | `TOOL_CALLING_*` |
+|---|---|---|---|---|
+| **chat** (primary) | `gemma4:31b-cloud` | Main conversation, reasoning, structured output | `AICHAT_CHAT_*` |
+| **tool-calling** | `functiongemma:270m` | Function calling, tool invocation | `AICHAT_TOOL_*` |
 
 ### Configuration
 
@@ -473,23 +471,16 @@ spring:
     custom:
       chat:
         provider: openai
-        base-url: ${CHAT_BASE_URL:http://localhost:11434/v1}
-        api-key: ${CHAT_API_KEY:none}
-        model: ${CHAT_MODEL:gemma4:31b-cloud}
-        temperature: 0.7
-        max-tokens: 6000
-      chat-alt:
-        provider: openai
-        base-url: ${CHAT_ALT_BASE_URL:http://localhost:11434/v1}
-        api-key: ${CHAT_ALT_API_KEY:none}
-        model: ${CHAT_ALT_MODEL:gemma4:12b}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_CHAT_MODEL:gemma4:31b-cloud}
         temperature: 0.7
         max-tokens: 6000
       tool-calling:
         provider: openai
-        base-url: ${TOOL_CALLING_BASE_URL:http://localhost:11434/v1}
-        api-key: ${TOOL_CALLING_API_KEY:none}
-        model: ${TOOL_CALLING_MODEL:functiongemma:270m}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
         temperature: 0.1
         max-tokens: 2048
 ```
@@ -752,23 +743,16 @@ spring:
     custom:
       chat:
         provider: openai
-        base-url: ${CHAT_BASE_URL:http://localhost:11434/v1}
-        api-key: ${CHAT_API_KEY:none}
-        model: ${CHAT_MODEL:gemma4:31b-cloud}
-        temperature: 0.7
-        max-tokens: 6000
-      chat-alt:
-        provider: openai
-        base-url: ${CHAT_ALT_BASE_URL:http://localhost:11434/v1}
-        api-key: ${CHAT_ALT_API_KEY:none}
-        model: ${CHAT_ALT_MODEL:gemma4:12b}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_CHAT_MODEL:gemma4:31b-cloud}
         temperature: 0.7
         max-tokens: 6000
       tool-calling:
         provider: openai
-        base-url: ${TOOL_CALLING_BASE_URL:http://localhost:11434/v1}
-        api-key: ${TOOL_CALLING_API_KEY:none}
-        model: ${TOOL_CALLING_MODEL:functiongemma:270m}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
         temperature: 0.1
         max-tokens: 2048
     mcp:
@@ -827,15 +811,10 @@ ai-chat:
 | `AICHAT_DB_NAME` | `ai_chat` | Database name |
 | `AICHAT_DB_USERNAME` | `ai_chat` | DB user |
 | `AICHAT_DB_PASSWORD` | `ai_chat` | DB password |
-| `CHAT_BASE_URL` | `http://localhost:11434/v1` | Primary chat model endpoint |
-| `CHAT_API_KEY` | `none` | API key for chat model |
-| `CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model name |
-| `CHAT_ALT_BASE_URL` | `http://localhost:11434/v1` | Alternative chat model endpoint |
-| `CHAT_ALT_API_KEY` | `none` | API key for alt model |
-| `CHAT_ALT_MODEL` | `gemma4:12b` | Alternative chat model name |
-| `TOOL_CALLING_BASE_URL` | `http://localhost:11434/v1` | Tool-calling model endpoint |
-| `TOOL_CALLING_API_KEY` | `none` | API key for tool-calling model |
-| `TOOL_CALLING_MODEL` | `functiongemma:270m` | Tool-calling model name |
+| `AICHAT_CHAT_BASE_URL` | `http://localhost:11434` | Primary chat model endpoint |
+| `AICHAT_CHAT_API_KEY` | `ollama` | API key for chat model |
+| `AICHAT_CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model name |
+| `AICHAT_TOOL_MODEL` | `functiongemma:270m` | Tool-calling model name |
 | `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (`medical-dataset` connection) |
 | `SERVER_PORT` | `8095` | Application port |
 
@@ -881,15 +860,10 @@ services:
       AICHAT_DB_HOST: postgres
       AICHAT_DB_USERNAME: ai_chat
       AICHAT_DB_PASSWORD: ai_chat
-      CHAT_BASE_URL: http://host.docker.internal:11434/v1
-      CHAT_API_KEY: none
-      CHAT_MODEL: gemma4:31b-cloud
-      CHAT_ALT_BASE_URL: http://host.docker.internal:11434/v1
-      CHAT_ALT_API_KEY: none
-      CHAT_ALT_MODEL: gemma4:12b
-      TOOL_CALLING_BASE_URL: http://host.docker.internal:11434/v1
-      TOOL_CALLING_API_KEY: none
-      TOOL_CALLING_MODEL: functiongemma:270m
+      AICHAT_CHAT_BASE_URL: http://host.docker.internal:11434
+      AICHAT_CHAT_API_KEY: ollama
+      AICHAT_CHAT_MODEL: gemma4:31b-cloud
+      AICHAT_TOOL_MODEL: functiongemma:270m
       MCP_MEDICAL_URL: http://host.docker.internal:8092/sse
     depends_on:
       postgres:

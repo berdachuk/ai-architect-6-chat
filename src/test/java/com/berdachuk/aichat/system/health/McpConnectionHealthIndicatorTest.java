@@ -61,6 +61,7 @@ class McpConnectionHealthIndicatorTest {
                 status == ServerStatus.DOWN ? "unreachable" : null,
                 List.of(McpSchema.Tool.builder().name("tool").description("desc").build()),
                 List.of(),
-                List.of());
+                List.of(),
+                null);
     }
 }

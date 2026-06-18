@@ -1,7 +1,8 @@
 # Plans index
 
 | ID | Plan | Status |
-|---|---|---|
+|---|---|---|---|
+| M-16 | [M-16-mcp-self-description.md](M-16-mcp-self-description.md) | Draft |
 | M-03 | [M-03-m2-chat-crud-openapi.md](M-03-m2-chat-crud-openapi.md) | Active |
 | — | Implementation milestones M1–M9 | See [docs/01-requirements.md §14](../../docs/01-requirements.md) |
 

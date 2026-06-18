@@ -80,6 +80,7 @@ class MCPToolAdvisorTest {
                 null,
                 List.of(McpSchema.Tool.builder().name(toolName).description("Tool").build()),
                 List.of(),
-                List.of());
+                List.of(),
+                null);
     }
 }

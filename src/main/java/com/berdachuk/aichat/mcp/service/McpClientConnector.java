@@ -43,6 +43,7 @@ public class McpClientConnector {
             client.initialize();
 
             McpSchema.Implementation serverInfo = client.getServerInfo();
+            String instructions = client.getServerInstructions();
             List<McpSchema.Tool> tools = connection.toolsEnabled()
                     ? client.listTools().tools()
                     : List.of();
@@ -64,7 +65,8 @@ public class McpClientConnector {
                     null,
                     tools,
                     resources,
-                    prompts));
+                    prompts,
+                    instructions));
 
             log.info(
                     "MCP connection '{}' initialized: {} tools, {} resources, {} prompts",
@@ -85,7 +87,8 @@ public class McpClientConnector {
                     ex.getMessage(),
                     List.of(),
                     List.of(),
-                    List.of()));
+                    List.of(),
+                    null));
         }
     }
 

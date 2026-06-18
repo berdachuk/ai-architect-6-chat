@@ -117,3 +117,14 @@
 - README sync
 - **Plan:** M-14 archived; M-15 active
 
+## 2026-06-18 — M-16 MCP self-description protocol
+
+- `McpServerInfo`: added `instructions` field
+- `McpClientConnector`: capture `client.getServerInstructions()` after initialize
+- `McpServerRegistry`: include server instructions + prompts with argument schemas in catalog text
+- `MCPToolAdvisor`: fix `ClassCastException` — use `tcc.mutate()` instead of `DefaultToolCallingChatOptions`
+- `application-debug.yml`: verbose logging profile with file output
+- Tests: updated all `McpServerInfo` constructors
+- Docs: `docs/mcp-self-description-improvements.md`
+- **Plan:** M-16 archived
+

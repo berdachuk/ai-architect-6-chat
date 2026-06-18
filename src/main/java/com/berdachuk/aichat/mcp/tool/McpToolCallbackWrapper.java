@@ -16,7 +16,7 @@ public class McpToolCallbackWrapper implements ToolCallback {
         this.delegate = SyncMcpToolCallback.builder()
                 .mcpClient(client)
                 .tool(tool)
-                .prefixedToolName(serverName + "_" + tool.name())
+                .prefixedToolName(serverName.replace("-", "_") + "_" + tool.name())
                 .build();
     }
 

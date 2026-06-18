@@ -10,8 +10,6 @@ spring:
     custom:
       chat:
         base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
-      chat-alt:
-        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
       tool-calling:
         base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
     mcp:

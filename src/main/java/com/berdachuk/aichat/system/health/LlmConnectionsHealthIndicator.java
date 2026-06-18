@@ -13,7 +13,7 @@ import java.util.Map;
 @Component
 public class LlmConnectionsHealthIndicator implements HealthIndicator {
 
-    private static final List<String> ROLES = List.of("chat", "chat-alt", "tool-calling");
+    private static final List<String> ROLES = List.of("chat", "tool-calling");
 
     private final AiChatProperties props;
     private final ChatClientLivenessProbe probe;
@@ -58,7 +58,6 @@ public class LlmConnectionsHealthIndicator implements HealthIndicator {
     private AiChatProperties.ModelConfig configFor(String role) {
         return switch (role) {
             case "chat" -> props.chat();
-            case "chat-alt" -> props.chatAlt();
             case "tool-calling" -> props.toolCalling();
             default -> throw new IllegalArgumentException("Unknown LLM role: " + role);
         };

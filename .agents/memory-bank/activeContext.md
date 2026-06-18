@@ -4,11 +4,11 @@
 
 ## Current focus
 
-**M-16 complete.** MCP self-description protocol: `serverInstructions` captured, instructions + prompts with argument schemas exposed in catalog text. `ClassCastException` in `MCPToolAdvisor` fixed. Debug profile added.
+**M-17 complete.** OWASP security hardening: A01 X-User-Id validation, A10 SSRF URL validation. Security assessment report created.
 
 ## In progress
 
-- [x] M1–M9, M-11–M-16 complete
+- [x] M1–M9, M-11–M-17 complete
 
 ## Next steps
 

@@ -128,3 +128,10 @@
 - Docs: `docs/mcp-self-description-improvements.md`
 - **Plan:** M-16 archived
 
+## 2026-06-18 — M-17 OWASP security hardening
+
+- `UserContext`: validate `X-User-Id` header/cookie — max 100 chars, `[a-zA-Z0-9._\-@]+` pattern; invalid values fall back to `anonymous`
+- `CreateMcpConnectionRequest`: `@Pattern` validation on URL — http/https only, valid hostname with TLD or localhost; blocks `file://`, internal IPs
+- Docs: `docs/security-assessment-owasp.md` — full risk assessment with before/after demonstrations for A01 and A10
+- **Plan:** M-17 archived
+

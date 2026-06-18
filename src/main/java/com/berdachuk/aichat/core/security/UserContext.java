@@ -10,6 +10,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -17,6 +19,10 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Component
 public class UserContext {
+
+  private static final Logger log = LoggerFactory.getLogger(UserContext.class);
+  private static final int MAX_USER_ID_LENGTH = 100;
+  private static final String USER_ID_PATTERN = "[a-zA-Z0-9._\\-@]+";
 
   private final AiChatSecurityProperties securityProperties;
 
@@ -84,13 +90,23 @@ public class UserContext {
       HttpServletRequest request = servletAttrs.getRequest();
       String headerId = request.getHeader("X-User-Id");
       if (headerId != null && !headerId.isBlank()) {
+        if (headerId.length() > MAX_USER_ID_LENGTH || !headerId.matches(USER_ID_PATTERN)) {
+          log.warn("Rejected invalid X-User-Id header: length={}, matches pattern={}",
+              headerId.length(), headerId.matches(USER_ID_PATTERN));
+          return "anonymous";
+        }
         return headerId;
       }
       Cookie[] cookies = request.getCookies();
       if (cookies != null) {
         for (Cookie cookie : cookies) {
           if ("aichat-user-id".equals(cookie.getName())) {
-            return cookie.getValue();
+            String cookieValue = cookie.getValue();
+            if (cookieValue != null && !cookieValue.isBlank()
+                && cookieValue.length() <= MAX_USER_ID_LENGTH
+                && cookieValue.matches(USER_ID_PATTERN)) {
+              return cookieValue;
+            }
           }
         }
       }

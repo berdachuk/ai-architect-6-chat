@@ -2,6 +2,8 @@
 
 General-purpose AI chat with multi-session history, long-dialog memory, optional MCP context enrichment, and Harness-style agent progress.
 
+![Chat UI screenshot](docs/screenshots/chat-ui.png)
+
 **Core chat works without MCP** — sessions, streaming, and session memory do not depend on any MCP server. MCP adds tool enrichment when a server is available.
 
 Built on patterns from [med-expert-match-ce](https://github.com/berdachuk/med-expert-match-ce). Optional MCP enrichment via [ai-architect-6-mcp](https://github.com/berdachuk/ai-architect-6-mcp).
@@ -44,8 +46,6 @@ Built on patterns from [med-expert-match-ce](https://github.com/berdachuk/med-ex
 | **Observability**       | Actuator health (MCP indicator in test profile); Prometheus + Grafana dashboard in `prod`          |
 | **CI**                  | `mvn test`, `mvn verify -Pintegration`, Playwright E2E against Docker Compose                      |
 | **Spring Modulith**     | Package modules with `allowedDependencies`; `verify()` in CI                                       |
-
-![Chat UI screenshot](docs/screenshots/chat-ui.png)
 
 ---
 

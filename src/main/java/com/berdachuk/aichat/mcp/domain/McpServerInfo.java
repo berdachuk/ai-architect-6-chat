@@ -16,7 +16,8 @@ public record McpServerInfo(
         String downReason,
         List<McpSchema.Tool> tools,
         List<McpSchema.Resource> resources,
-        List<McpSchema.Prompt> prompts) {
+        List<McpSchema.Prompt> prompts,
+        String instructions) {
 
     public McpServerInfo withStatus(ServerStatus newStatus, String reason) {
         return new McpServerInfo(
@@ -30,6 +31,7 @@ public record McpServerInfo(
                 reason,
                 tools,
                 resources,
-                prompts);
+                prompts,
+                instructions);
     }
 }

@@ -37,6 +37,7 @@ public class ChatWebController {
         model.addAttribute("chat", chat);
         model.addAttribute("chats", chats);
         model.addAttribute("userId", userId);
+        model.addAttribute("oauth2LoginEnabled", userContext.isOAuth2LoginEnabled());
         return "chat";
     }
 }

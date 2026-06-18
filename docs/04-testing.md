@@ -234,7 +234,7 @@ Automated REST coverage: `SmokeChecklistIntegrationTest` and `scripts/smoke-rest
 | Home → default chat | ✅ IT | `GET /` |
 | Sidebar "New Chat" | ✅ IT | HTML assertion |
 | Stream without MCP | ✅ IT | Stub LLM in test profile |
-| Stream token-by-token | manual | Requires Ollama |
+| Stream token-by-token | ✅ Playwright (`e2e` profile) | Stub LLM in Docker CI |
 | Agent panel activity | manual | Browser + MCP tools |
 | Create / switch / delete chat | ✅ IT | REST CRUD |
 | MCP tools (list specialties, search cases) | manual | Requires ai-architect-6-mcp + Ollama |
@@ -249,6 +249,23 @@ Manual steps (browser + live Ollama/MCP):
 - [ ] Ask "search for cardiovascular cases" → `search_cases` tool called
 
 **CLI smoke (running app):** `bash scripts/smoke-rest.sh http://localhost:8095`
+
+**Browser E2E (Playwright):**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build --wait
+cd e2e && npm ci && npx playwright install chromium && npm test
+```
+
+CI runs the same Playwright suite in the `e2e` job after `docker compose up --wait`.
+
+| Check | Playwright | Notes |
+|---|---|---|
+| Home UI shell | ✅ `chat-ui.spec.ts` | Composer, MCP panel, navbar |
+| New chat navigation | ✅ | URL `/chat/{id}` |
+| Agent panel collapsed | ✅ | Before first message |
+| Stream token-by-token | manual | Requires Ollama in running stack |
+| MCP tool calls | manual | Requires ai-architect-6-mcp + Ollama |
 
 ---
 

@@ -23,4 +23,14 @@ class IdGeneratorTest {
         }
         assertThat(ids).hasSize(10_000);
     }
+
+    @Test
+    void generateId_firstFourBytesEncodeCurrentTimestamp() {
+        long before = System.currentTimeMillis() / 1000L;
+        String id = IdGenerator.generateId();
+        long after = System.currentTimeMillis() / 1000L;
+
+        long embedded = Long.parseLong(id.substring(0, 8), 16);
+        assertThat(embedded).isBetween(before, after);
+    }
 }

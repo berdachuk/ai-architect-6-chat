@@ -1,0 +1,37 @@
+groups:
+  - name: ai-chat
+    rules:
+      - alert: AiChatDown
+        expr: up{job="ai-chat"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: ai-chat scrape target is down
+          description: Prometheus cannot scrape ai-chat for more than 2 minutes.
+
+      - alert: AiChatHighErrorRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{application="ai-chat", status=~"5.."}[5m]))
+          /
+          sum(rate(http_server_requests_seconds_count{application="ai-chat"}[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: ai-chat HTTP 5xx rate above 5%
+          description: Check application logs and downstream dependencies (PostgreSQL, Ollama, MCP).
+
+      - alert: AiChatHighLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(http_server_requests_seconds_bucket{application="ai-chat"}[5m])) by (le)
+          ) > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: ai-chat HTTP p95 latency above 5s
+          description: Investigate LLM latency, database pool, or MCP tool calls.

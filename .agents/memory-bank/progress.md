@@ -1,5 +1,18 @@
 # Progress log
 
+## 2026-06-18 — Developer ergonomics and chat UI polish
+
+- `docker-compose.dev.yml` + `application-dev.yml` — local dev workflow
+  (Postgres on host:5437, app via `mvn spring-boot:run -Pdev`)
+- `AiChatApplication` — log UI/Health/Swagger URLs on startup
+- `LlmConnectionsHealthIndicator` — per-role LLM health under
+  `/actuator/health` (chat, chat-alt, tool-calling)
+- `IdGenerator` — MongoDB ObjectId layout (4-byte ts + 5-byte random
+  + 3-byte counter) with a timestamp-decoding test
+- Chat UI: stable two-section flex layout, per-message collapsible
+  agent panel, full markdown rendering with `highlight.js`
+- `feature/dev-improvements` merged into `develop` and deleted
+
 ## 2026-06-17 — Documentation baseline
 
 - Full `docs/` set; OpenAI-compatible client + default Ollama
@@ -85,6 +98,40 @@
 - Optional OAuth2/JWT (`application-oauth2.yml`); default `oauth2-enabled: false` for open dev testing
 - `docs/user-guide.md` end-user documentation
 - Prometheus `/actuator/prometheus` in `prod` profile
-- README aligned with `OLLAMA_*` defaults (`gemma3:4b`)
+- README aligned with `OLLAMA_*` defaults (`gemma4:31b-cloud`)
 - **Plan:** M-12 archived; M-13 active for E2E and Grafana
+
+## 2026-06-17 — M-13 E2E and observability
+
+- Playwright suite in `e2e/` with `chat-ui.spec.ts`
+- CI `e2e` job: `docker compose` + Playwright against `:8095`
+- Grafana dashboard `observability/grafana/ai-chat-overview.json`
+- `docker-compose.e2e.yml` disables MCP bootstrap for CI
+- **Plan:** M-13 archived; M-14 active for production hardening
+
+## 2026-06-17 — M-14 Production hardening
+
+- `oauth2-login` profile + `UserContext` OIDC principal; web UI skips `X-User-Id` when enabled
+- `e2e` profile stub LLM + Playwright `chat-stream.spec.ts`
+- Prometheus alert rules, MIT LICENSE, RELEASE.md
+- README sync
+- **Plan:** M-14 archived; M-15 active
+
+## 2026-06-18 — M-16 MCP self-description protocol
+
+- `McpServerInfo`: added `instructions` field
+- `McpClientConnector`: capture `client.getServerInstructions()` after initialize
+- `McpServerRegistry`: include server instructions + prompts with argument schemas in catalog text
+- `MCPToolAdvisor`: fix `ClassCastException` — use `tcc.mutate()` instead of `DefaultToolCallingChatOptions`
+- `application-debug.yml`: verbose logging profile with file output
+- Tests: updated all `McpServerInfo` constructors
+- Docs: `docs/mcp-self-description-improvements.md`
+- **Plan:** M-16 archived
+
+## 2026-06-18 — M-17 OWASP security hardening
+
+- `UserContext`: validate `X-User-Id` header/cookie — max 100 chars, `[a-zA-Z0-9._\-@]+` pattern; invalid values fall back to `anonymous`
+- `CreateMcpConnectionRequest`: `@Pattern` validation on URL — http/https only, valid hostname with TLD or localhost; blocks `file://`, internal IPs
+- Docs: `docs/security-assessment-owasp.md` — full risk assessment with before/after demonstrations for A01 and A10
+- **Plan:** M-17 archived
 

@@ -23,15 +23,12 @@ spring:
     custom:
       chat:
         provider: ollama
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        api-key: ${OLLAMA_API_KEY:ollama}
-        model: ${OLLAMA_CHAT_MODEL:gemma3:4b}
-      chat-alt:
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        model: ${OLLAMA_CHAT_ALT_MODEL:gemma3:4b}
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+        api-key: ${AICHAT_CHAT_API_KEY:ollama}
+        model: ${AICHAT_CHAT_MODEL:gemma4:31b-cloud}
       tool-calling:
-        base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-        model: ${OLLAMA_TOOL_MODEL:gemma3:4b}
+        base-url: ${AICHAT_TOOL_BASE_URL:http://localhost:11434}
+        model: ${AICHAT_TOOL_MODEL:functiongemma:270m}
 
 server:
   port: ${SERVER_PORT:8095}
@@ -66,6 +63,22 @@ ai-chat:
 Set `SPRING_PROFILES_ACTIVE=prod` in production. Override health detail exposure with `MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=when_authorized` if needed.
 
 **Metrics:** with `prod` profile, scrape `GET /actuator/prometheus` (requires `micrometer-registry-prometheus`).
+
+**Grafana:** import [observability/grafana/ai-chat-overview.json](../observability/grafana/ai-chat-overview.json) and point at your Prometheus datasource. Scrape target example:
+
+```yaml
+scrape_configs:
+  - job_name: ai-chat
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['localhost:8095']
+```
+
+Run with `SPRING_PROFILES_ACTIVE=prod` so the Prometheus endpoint is exposed.
+
+**Alerting:** example rules in [observability/prometheus/alerts.yml](../observability/prometheus/alerts.yml).
+
+**Browser OIDC login:** `SPRING_PROFILES_ACTIVE=oauth2-login` with `OAUTH2_CLIENT_ID`, `OAUTH2_CLIENT_SECRET`, `OAUTH2_ISSUER_URI` — see `application-oauth2-login.yml`. Web UI omits `X-User-Id` when login is enabled.
 
 ### User identity and OAuth2 (optional)
 
@@ -117,11 +130,12 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 | `AICHAT_DB_NAME` | `ai_chat` | Database name |
 | `AICHAT_DB_USERNAME` | `ai_chat` | DB user |
 | `AICHAT_DB_PASSWORD` | `ai_chat` | DB password |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama base URL (no `/v1` suffix — Spring AI Ollama provider) |
-| `OLLAMA_API_KEY` | `ollama` | API key placeholder for Ollama |
-| `OLLAMA_CHAT_MODEL` | `gemma3:4b` | Primary chat model |
-| `OLLAMA_CHAT_ALT_MODEL` | `gemma3:4b` | Alternative chat model |
-| `OLLAMA_TOOL_MODEL` | `gemma3:4b` | Tool-calling model |
+| `AICHAT_CHAT_BASE_URL` | `http://localhost:11434` | Chat model endpoint |
+| `AICHAT_CHAT_API_KEY` | `ollama` | Chat model API key |
+| `AICHAT_CHAT_MODEL` | `gemma4:31b-cloud` | Primary chat model |
+| `AICHAT_TOOL_BASE_URL` | `http://localhost:11434` | Tool-calling model endpoint |
+| `AICHAT_TOOL_API_KEY` | `ollama` | Tool-calling model API key |
+| `AICHAT_TOOL_MODEL` | `functiongemma:270m` | Tool-calling model |
 | `MCP_MEDICAL_URL` | `http://localhost:8092/sse` | ai-architect-6-mcp SSE endpoint (bootstrap seeder) |
 | `SERVER_PORT` | `8095` | Application port |
 | `SPRING_PROFILES_ACTIVE` | _(none)_ | Set to `prod` for production actuator defaults |
@@ -144,10 +158,12 @@ services:
       AICHAT_DB_PORT: 5432
       AICHAT_DB_USERNAME: ai_chat
       AICHAT_DB_PASSWORD: ai_chat
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
-      OLLAMA_API_KEY: ollama
-      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-gemma3:4b}
-      MCP_MEDICAL_URL: ${MCP_MEDICAL_URL:-http://host.docker.internal:8092/sse}
+      AICHAT_CHAT_BASE_URL: http://host.docker.internal:11434
+      AICHAT_CHAT_API_KEY: ollama
+      AICHAT_CHAT_MODEL: ${AICHAT_CHAT_MODEL:-gemma4:31b-cloud}
+      AICHAT_TOOL_BASE_URL: ${AICHAT_TOOL_BASE_URL:-http://host.docker.internal:11434}
+      AICHAT_TOOL_API_KEY: ${AICHAT_TOOL_API_KEY:-ollama}
+      AICHAT_TOOL_MODEL: ${AICHAT_TOOL_MODEL:-functiongemma:270m}
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,6 @@
+# E2E overrides for CI — stub LLM profile, no MCP bootstrap.
+services:
+  ai-chat:
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      AI_CHAT_MCP_BOOTSTRAP_ENABLED: "false"

@@ -7,12 +7,16 @@ import com.berdachuk.aichat.mcp.registry.McpServerRegistry;
 import com.berdachuk.aichat.mcp.repository.McpConnectionRepository;
 import com.berdachuk.aichat.mcp.rest.dto.CreateMcpConnectionRequest;
 import com.berdachuk.aichat.mcp.rest.dto.McpConnectionView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,6 +26,8 @@ import java.util.Optional;
 @Transactional
 @ConditionalOnProperty(name = "ai-chat.features.mcp-client", havingValue = "true", matchIfMissing = true)
 public class McpConnectionService {
+
+    private static final Logger log = LoggerFactory.getLogger(McpConnectionService.class);
 
     private final McpConnectionRepository repository;
     private final McpClientConnector connector;
@@ -46,6 +52,17 @@ public class McpConnectionService {
     public void loadCatalogOnStartup() {
         bootstrapSeeder.seedIfEmpty();
         repository.findAll().forEach(connector::connect);
+    }
+
+    @Scheduled(fixedDelay = 30_000)
+    public void retryDownConnections() {
+        registry.getAllServers().stream()
+                .filter(info -> info.status() == ServerStatus.DOWN)
+                .forEach(info -> {
+                    log.info("Retrying MCP connection '{}'", info.connectionName());
+                    repository.findById(info.connectionId())
+                            .ifPresent(connector::connect);
+                });
     }
 
     @Transactional(readOnly = true)

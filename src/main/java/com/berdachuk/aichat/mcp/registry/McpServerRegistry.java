@@ -105,11 +105,57 @@ public class McpServerRegistry {
             builder.append(" (").append(server.serverName()).append(")");
         }
         builder.append("\n");
-        server.tools().forEach(tool -> builder.append("- **")
-                .append(tool.name())
-                .append("**: ")
-                .append(tool.description() == null ? "" : tool.description())
-                .append("\n"));
+        if (server.instructions() != null && !server.instructions().isBlank()) {
+            builder.append(server.instructions()).append("\n\n");
+        }
+        server.tools().forEach(tool -> {
+            builder.append("- **").append(tool.name()).append("**");
+            if (tool.description() != null && !tool.description().isBlank()) {
+                builder.append(": ").append(tool.description());
+            }
+            Map<String, Object> schema = tool.inputSchema();
+            if (schema != null && !schema.isEmpty()) {
+                builder.append("\n  - Parameters: ").append(formatSchema(schema));
+            }
+            builder.append("\n");
+        });
+        if (!server.prompts().isEmpty()) {
+            builder.append("\n#### Prompts (prompt templates — not invocable tools)\n");
+            server.prompts().forEach(prompt -> {
+                builder.append("- **").append(prompt.name()).append("**");
+                if (prompt.description() != null && !prompt.description().isBlank()) {
+                    builder.append(": ").append(prompt.description());
+                }
+                builder.append("\n");
+                prompt.arguments().forEach(arg -> {
+                    builder.append("  - ").append(arg.name());
+                    if (arg.required() != null && arg.required()) {
+                        builder.append(" (required)");
+                    }
+                    if (arg.description() != null && !arg.description().isBlank()) {
+                        builder.append(": ").append(arg.description());
+                    }
+                    builder.append("\n");
+                });
+            });
+        }
         return builder.toString().trim();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String formatSchema(Map<String, Object> schema) {
+        Map<String, Object> properties = (Map<String, Object>) schema.get("properties");
+        if (properties == null || properties.isEmpty()) {
+            return "none";
+        }
+        List<String> required = (List<String>) schema.get("required");
+        return properties.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> prop = (Map<String, Object>) e.getValue();
+                    String type = prop == null ? "any" : String.valueOf(prop.get("type"));
+                    boolean isRequired = required != null && required.contains(e.getKey());
+                    return e.getKey() + " (" + type + (isRequired ? ", required" : "") + ")";
+                })
+                .collect(Collectors.joining(", "));
     }
 }

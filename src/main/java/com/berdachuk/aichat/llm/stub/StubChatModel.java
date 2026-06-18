@@ -1,4 +1,4 @@
-package com.berdachuk.aichat.llm.support;
+package com.berdachuk.aichat.llm.stub;
 
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
+/** Deterministic chat model for {@code test} and {@code e2e} profiles. */
 public class StubChatModel implements ChatModel {
 
     private final String[] chunks;

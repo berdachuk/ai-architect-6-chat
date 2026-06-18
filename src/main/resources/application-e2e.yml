@@ -1,0 +1,5 @@
+# E2E profile — stub LLM for Playwright/CI without Ollama.
+ai-chat:
+  mcp:
+    bootstrap:
+      enabled: false

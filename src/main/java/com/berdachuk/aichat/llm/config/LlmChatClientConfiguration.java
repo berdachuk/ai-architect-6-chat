@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile("!test")
+@Profile("!test & !e2e")
 @EnableConfigurationProperties(AiChatProperties.class)
 public class LlmChatClientConfiguration {
 
@@ -50,7 +50,7 @@ public class LlmChatClientConfiguration {
     ToolCallingAdvisor toolCallingAdvisor(ToolCallingManager toolCallingManager) {
         return ToolCallingAdvisor.builder()
                 .toolCallingManager(toolCallingManager)
-                .conversationHistoryEnabled(false)
+                .conversationHistoryEnabled(true)
                 .build();
     }
 }

@@ -25,7 +25,7 @@ class UserContextTest {
 
   @Test
   void devModeUsesHeaderThenCookieThenAnonymous() {
-    UserContext context = new UserContext(new AiChatSecurityProperties(false, "sub"));
+    UserContext context = new UserContext(new AiChatSecurityProperties(false, false, "sub"));
 
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.addHeader("X-User-Id", "header-user");
@@ -43,7 +43,7 @@ class UserContextTest {
 
   @Test
   void oauthModeUsesJwtClaim() {
-    UserContext context = new UserContext(new AiChatSecurityProperties(true, "sub"));
+    UserContext context = new UserContext(new AiChatSecurityProperties(true, false, "sub"));
     Jwt jwt =
         Jwt.withTokenValue("token")
             .header("alg", "none")
@@ -59,7 +59,7 @@ class UserContextTest {
 
   @Test
   void oauthModeFallsBackToDevHeaderWithoutJwt() {
-    UserContext context = new UserContext(new AiChatSecurityProperties(true, "sub"));
+    UserContext context = new UserContext(new AiChatSecurityProperties(true, false, "sub"));
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.addHeader("X-User-Id", "header-user");
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));

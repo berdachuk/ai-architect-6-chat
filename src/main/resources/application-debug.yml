@@ -1,0 +1,29 @@
+# Debug profile — verbose logging for tracing application flow
+# Run with: mvn spring-boot:run -Dspring-boot.run.profiles=dev,debug
+# Or: SPRING_PROFILES_ACTIVE=dev,debug mvn spring-boot:run
+logging:
+  level:
+    root: INFO
+    com.berdachuk.aichat: TRACE
+    com.berdachuk.aichat.chat: TRACE
+    com.berdachuk.aichat.llm: TRACE
+    com.berdachuk.aichat.mcp: TRACE
+    com.berdachuk.aichat.web: TRACE
+    com.berdachuk.aichat.core: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.ai.model: DEBUG
+    org.springframework.ai.mcp: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet: DEBUG
+    org.springframework.boot.actuate: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.transaction: DEBUG
+    org.springframework.jdbc: DEBUG
+    org.flywaydb: INFO
+    io.micrometer: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ai-chat-debug.log
+    max-size: 10MB
+    max-history: 5

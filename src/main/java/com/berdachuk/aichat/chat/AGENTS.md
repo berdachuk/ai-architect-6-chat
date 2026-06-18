@@ -10,10 +10,10 @@ Chat session and message persistence plus REST API (`/api/v1/chats`). Owns the c
 
 ## Domain models (owned here)
 
-| Model | Key fields |
-|---|---|
-| `Chat` | `id`, `userId`, `name`, `agentId`, `isDefault`, `messageCount`, `enabledMcpConnections`, timestamps |
-| `ChatMessage` | `id`, `chatId`, `role`, `content`, `sequenceNumber`, `metadata` |
+| Model         | Key fields                                                                                          |
+|---------------|-----------------------------------------------------------------------------------------------------|
+| `Chat`        | `id`, `userId`, `name`, `agentId`, `isDefault`, `messageCount`, `enabledMcpConnections`, timestamps |
+| `ChatMessage` | `id`, `chatId`, `role`, `content`, `sequenceNumber`, `metadata`                                     |
 
 Session memory for LLM uses Spring AI JDBC (`userId-chatId`) — owned by `llm/`, not duplicated here.
 
@@ -41,11 +41,11 @@ Same as root (`mvn test`); module tests under `src/test/java/.../chat/`.
 
 ## Boundaries
 
-| | |
-|---|---|
-| ✅ | CRUD, history pagination, rename, default chat lifecycle |
+|    |                                                                 |
+|----|-----------------------------------------------------------------|
+| ✅  | CRUD, history pagination, rename, default chat lifecycle        |
 | 🚫 | LLM calls, MCP, Harness, Thymeleaf (delegate to `llm/`, `web/`) |
-| 🚫 | Direct dependency on `llm`, `mcp`, `web` |
+| 🚫 | Direct dependency on `llm`, `mcp`, `web`                        |
 
 ## Skills
 

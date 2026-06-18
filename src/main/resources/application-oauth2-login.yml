@@ -1,0 +1,19 @@
+# Optional profile — browser OIDC login (e.g. Keycloak authorization code flow).
+# Usage: SPRING_PROFILES_ACTIVE=oauth2-login plus OAUTH2_* env vars below.
+ai-chat:
+  security:
+    oauth2-login-enabled: true
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          ai-chat:
+            client-id: ${OAUTH2_CLIENT_ID}
+            client-secret: ${OAUTH2_CLIENT_SECRET}
+            scope: openid,profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          ai-chat:
+            issuer-uri: ${OAUTH2_ISSUER_URI}

@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public record AiChatProperties(
         @Valid ModelConfig chat,
-        @Valid ModelConfig chatAlt,
         @Valid ModelConfig toolCalling) {
 
     public record ModelConfig(

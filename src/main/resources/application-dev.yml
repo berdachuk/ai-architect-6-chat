@@ -1,0 +1,43 @@
+# Local development profile — run with:
+#   docker compose -f docker-compose.dev.yml up -d
+#   mvn spring-boot:run -Dspring-boot.run.profiles=dev
+spring:
+  datasource:
+    url: jdbc:postgresql://${AICHAT_DB_HOST:localhost}:${AICHAT_DB_PORT:5437}/${AICHAT_DB_NAME:ai_chat}?currentSchema=ai_chat
+    username: ${AICHAT_DB_USERNAME:ai_chat}
+    password: ${AICHAT_DB_PASSWORD:ai_chat}
+  ai:
+    custom:
+      chat:
+        base-url: ${AICHAT_CHAT_BASE_URL:http://localhost:11434}
+      tool-calling:
+        base-url: ${AICHAT_TOOL_BASE_URL:http://localhost:11434}
+    mcp:
+      client:
+        enabled: true
+
+management:
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.berdachuk.aichat: DEBUG
+    org.springframework.ai: INFO
+
+ai-chat:
+  mcp:
+    bootstrap:
+      enabled: true
+      url: ${MCP_MEDICAL_URL:http://localhost:8092/sse}

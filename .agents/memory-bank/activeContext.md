@@ -1,18 +1,16 @@
 # Active context
 
-**Updated:** 2026-06-17
+**Updated:** 2026-06-18
 
 ## Current focus
 
-**M-12 complete.** OAuth2 optional profile, user guide, Prometheus prod metrics, README alignment. Next: [M-13-e2e-observability.md](../plans/M-13-e2e-observability.md).
+**M-17 complete.** OWASP security hardening: A01 X-User-Id validation, A10 SSRF URL validation. Security assessment report created.
 
 ## In progress
 
-- [x] M1–M9 complete
-- [x] M-11 release hardening
-- [x] M-12 OAuth2 (default off), user guide, Prometheus, README models
+- [x] M1–M9, M-11–M-17 complete
 
-## Next steps (optional)
+## Next steps
 
-1. Playwright E2E smoke tests
-2. Grafana dashboards for Prometheus
+1. MCP server side: set `serverInstructions` in `ai-architect-6-mcp` transport config
+2. End-to-end verification with updated MCP server

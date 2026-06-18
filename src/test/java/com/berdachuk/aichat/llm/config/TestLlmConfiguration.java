@@ -2,8 +2,8 @@ package com.berdachuk.aichat.llm.config;
 
 import com.berdachuk.aichat.core.advisor.DateTimeContextAdvisor;
 import com.berdachuk.aichat.core.config.AiChatProperties;
+import com.berdachuk.aichat.llm.stub.StubChatModel;
 import com.berdachuk.aichat.llm.support.SessionAwareStubChatModel;
-import com.berdachuk.aichat.llm.support.StubChatModel;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.session.advisor.SessionMemoryAdvisor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

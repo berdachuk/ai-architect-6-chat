@@ -23,9 +23,11 @@
 |-------|------|-------------------|-----------------|------------------------|-------|
 | **minimax-m3:cloud** | ~? | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Best overall. Recognized prompt as template, not tool. |
 | **gemma4:12b** | 12B | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Required hyphen→underscore fix in tool names. |
-| **gemma4:e4b** | ~4B | ✅ All correct | ❌ Tried to invoke as tool | ❌ Same error | Smaller model. Ignores "prompt templates — not invocable tools" label. |
+| **gemma4:31b-cloud** | 31B | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Works after naming fixes. Previously failed due to tool naming bug. |
+| **qwen3.5:cloud** | ~? | ✅ All correct | ✅ Applied directly | ✅ `PREDICTED_LABEL` | Cloud-hosted variant. Same quality as local qwen3.5:9b but with classification. |
 | **qwen3.5:9b** | 9B | ✅ All correct (step 3 used `semantic_search` instead) | ✅ Applied directly | ❌ No `PREDICTED_LABEL` | Good tool selection but doesn't follow prompt template structure for classification. |
-| **gemma4:31b-cloud** | 31B | ❌ Called `get_case` without `id` | ❌ | ❌ | Original default. Root cause was tool naming bug (all tools named "medical-dataset"). |
+| **gemma4:e4b** | ~4B | ✅ All correct | ❌ Tried to invoke as tool | ❌ Same error | Smaller model. Ignores "prompt templates — not invocable tools" label. |
+| **medgemma1.5:4b** | 4B | ❌ No tool support | ❌ | ❌ | **Does not support tools.** Ollama returns `"does not support tools"`. Cannot be used for MCP workflows. |
 
 ## Key findings
 
@@ -48,10 +50,12 @@ All models correctly select the right tool for steps 1-5 after the naming fixes.
 
 | Priority | Action |
 |----------|--------|
-| **High** | Default model: `gemma4:12b` or `minimax-m3:cloud` — both pass all 7 steps |
-| **Medium** | Keep `gemma4:31b-cloud` as fallback only — too large, poor tool discipline |
-| **Low** | `qwen3.5:9b` acceptable for steps 1-6, skip step 7 classification |
-| **Avoid** | `gemma4:e4b` — too small for prompt template recognition |
+| **High** | Default model: `gemma4:12b` or `minimax-m3:cloud` — both pass all 7 steps reliably |
+| **High** | `qwen3.5:cloud` — cloud-hosted, passes all 7 steps, good alternative |
+| **Medium** | `gemma4:31b-cloud` — works after naming fixes but 19 GB, overkill for most use cases |
+| **Medium** | `qwen3.5:9b` — acceptable for steps 1-6, skip step 7 classification |
+| **Low** | `gemma4:e4b` — too small for prompt template recognition |
+| **Avoid** | `medgemma1.5:4b` — **does not support tools at all** (Ollama error: `"does not support tools"`). Cannot be used for MCP workflows. |
 
 ## Code fixes applied during testing
 

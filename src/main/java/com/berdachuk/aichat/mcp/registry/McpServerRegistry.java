@@ -120,7 +120,7 @@ public class McpServerRegistry {
             builder.append("\n");
         });
         if (!server.prompts().isEmpty()) {
-            builder.append("\n#### Prompts\n");
+            builder.append("\n#### Prompts (prompt templates — not invocable tools)\n");
             server.prompts().forEach(prompt -> {
                 builder.append("- **").append(prompt.name()).append("**");
                 if (prompt.description() != null && !prompt.description().isBlank()) {

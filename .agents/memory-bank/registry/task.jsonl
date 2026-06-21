@@ -1,0 +1,3 @@
+{"id":"TASK-001","status":"Open","date":"2026-06-17","title":"Wire Prometheus alert rules into CI/deployment","milestone":"M-15","plan":".agents/plans/M-15-maintenance-backlog.md"}
+{"id":"TASK-002","status":"Open","date":"2026-06-17","title":"Playwright coverage for MCP panel toggles","milestone":"M-15","plan":".agents/plans/M-15-maintenance-backlog.md"}
+{"id":"TASK-003","status":"Open","date":"2026-06-17","title":"OIDC login E2E against Testcontainers Keycloak","milestone":"M-15","plan":".agents/plans/M-15-maintenance-backlog.md"}

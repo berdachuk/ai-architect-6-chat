@@ -6,7 +6,7 @@
 |---|---|
 | Repo | `ai-architect-6-chat` |
 | Application | `ai-chat` |
-| Status | Documentation complete; **no implementation** (`src/` stubs for agent context only) |
+| Status | v1.0.0 released; implementation complete through M-17 |
 | Branch | `develop` |
 | Owner | Siarhei Berdachuk |
 
@@ -23,7 +23,7 @@ Build a general-purpose AI chat application: multi-session history, SSE streamin
 
 - Spring Modulith single deployable; JDBC only; Thymeleaf SSR
 - OpenAI-compatible client (`OpenAiChatModel`); **default Ollama**
-- **Chat works without MCP** at all times
+- **Chat works without MCP** at all times (NFR-001)
 - Port chat subsystem from med-expert-match-ce; add MCP client (new)
 
 ## Scope

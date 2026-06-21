@@ -1,0 +1,2 @@
+{"id":"SCN-001","status":"Planned","date":"2026-06-17","title":"User creates and lists chat sessions","req":["REQ-001"],"module":"chat","feature_file":null,"steps":["STEP-001","STEP-002","STEP-003"]}
+{"id":"SCN-002","status":"Planned","date":"2026-06-17","title":"Assistant reply streams token-by-token via SSE","req":["REQ-002"],"module":"llm","feature_file":null,"steps":["STEP-004","STEP-005","STEP-006"]}

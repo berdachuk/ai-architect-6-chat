@@ -1,0 +1,2 @@
+{"id":"TEST-001","status":"Done","date":"2026-06-17","title":"Chat REST CRUD integration","class":"ChatPageIntegrationTest","method":null,"kind":"integration","scn":["SCN-001"],"module":"chat"}
+{"id":"TEST-002","status":"Done","date":"2026-06-17","title":"SSE stream controller integration","class":"ChatStreamControllerIntegrationTest","method":null,"kind":"integration","scn":["SCN-002"],"module":"llm"}

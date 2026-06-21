@@ -7,7 +7,7 @@
 | Language | Java 21 |
 | Framework | Spring Boot **4.1.0** (4.x latest stable), Spring AI BOM **2.0.0**, Spring Modulith **2.1.0** |
 | DB | PostgreSQL 17, Flyway, JDBC only |
-| UI | Thymeleaf 3, Bootstrap 5.3, vanilla JS (planned M6) |
+| UI | Thymeleaf 3, Bootstrap 5.3, vanilla JS |
 | LLM client | `spring-ai-starter-model-openai` → `OpenAiChatModel` (M3+) |
 | LLM default | Ollama `http://localhost:11434/v1` |
 | MCP client | `spring-ai-starter-mcp-client` 2.0.0 (phase 2) |
@@ -18,12 +18,14 @@
 
 See [docs/01-requirements.md §11.1](../../docs/01-requirements.md) — Boot **4.x**, Spring AI **2.0.0** BOM mandatory; latest stable patches.
 
-## Commands (when implemented)
+## Commands
 
 ```bash
 mvn test                    # unit + Modulith
 mvn verify -Pintegration    # Testcontainers IT (Docker required; Windows: use WSL per DEC-008)
 mvn spring-boot:run         # local :8095
+scripts/sync-memory-index.sh         # regenerate memory-bank index files
+scripts/sync-memory-index.sh --check # CI gate: assert indexes in sync
 ```
 
 ## Development (DEC-008, DEC-009)
@@ -39,7 +41,7 @@ mvn spring-boot:run         # local :8095
 
 ## Key env vars
 
-`CHAT_*`, `CHAT_ALT_*`, `TOOL_CALLING_*`, `AICHAT_DB_*`, `MCP_MEDICAL_URL`, `SERVER_PORT`
+`CHAT_*`, `TOOL_CALLING_*`, `AICHAT_DB_*`, `MCP_MEDICAL_URL`, `SERVER_PORT`
 
 Full list: [docs/05-deployment.md](../../docs/05-deployment.md)
 
@@ -49,4 +51,4 @@ Full list: [docs/05-deployment.md](../../docs/05-deployment.md)
 
 ## Test stack
 
-JUnit 5, Spring Modulith test, Testcontainers PG 17, WireMock for MCP IT.
+JUnit 5, Spring Modulith test, Testcontainers PG 17, WireMock for MCP IT, Playwright for E2E.
